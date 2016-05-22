@@ -1,4 +1,4 @@
 # my-tutorials
 my tutorials
 
-one more time
+learning makes the sense
