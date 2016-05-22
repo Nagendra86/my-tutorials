@@ -1,0 +1,1672 @@
+	
+good Apache Websites : 
+1> http://www.askapache.com/
+2> http://wiki.openssl.org/index.php/Command_Line_Utilities
+3> https://jamielinux.com/articles/2013/08/create-an-intermediate-certificate-authority/
+4> http://www.addedbytes.com/articles/for-beginners/http-status-codes/ :: Status codes
+5> http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html   // RFC
+6> simple language : ftp://www-uxsup.csx.cam.ac.uk/pub/doc/suse/suse9.0/adminguide-9.0/node20.html
+ 
+https://www.geocerts.com/ssl_checker  a.petra2services.linkon.se
+	
+			                       APACHE NOTES
+			  
+Status Codes
+Informational ::  100 --199
+Successful    ::  200 ,request received ,understood and is being processed.
+                  204 ,same above,but do not send any response back.
+
+Redirection   ::  300 ,"Multiple Choices" data moved from original place and replies back with list of location from where
+                  user agent can choose the appropriate.    
+                  301 ,"Moved Permanently" data moved permanently to new location,and replies back with new location telling use this NEW URL from next time,for the same resource.
+				  302 ,"Moved Temporarily" it tells the resource is moved to new location,response contains new locations,but ask client to access the old url to get the resource.
+				  303 ,"See other/Referrer" it tells the location of resource and shld be retrieved from there,it doesn't mean that something is moved.
+				  304 , "Not modified" response for provide the document if it is new from client.
+				  
+Client Error  ::  400 , "Bad Syntax" 
+                  401 , "Unauthorised" ,first authorise then can access the resource.
+				  403 , "Forbidden" ,client cannot access the resource.
+				  404 , "Not found" 
+				  408 , "Request timeout" (wait over at server end)
+				  413 , "Request Entity Too Large" ,( this occurs when a file is sent using the POST method from a form, and the file is larger than the maximum size allowed in the server settings.)
+				  415 , "Unsupported Media Type" 
+				  
+Server Error  ::  500 , "Internal Server Error" server didn't expect it,and have no clue how to process it and unable to process the request.
+                  501 , "Not implemented" server doesn't implemented all that is needed to complete the request.
+				  502 , "Bad Gateway" server acting as Proxy server and received a bad response from upstream server.
+				  503 , "Service Unavailable" busy server/Overloaded.
+				  504 , "Gateway timeout" server acting as proxy and wait is over to get response from upstream server.
+				  505 , "HTTP version not supported" http version indicated is not supported.
+        
+_________________________________________________________________________
+
+1>  lynx -head -dump http://www.apache.org // Displays header info.
+2>  curl -LvS http://sj.se/
+
+0> apache came in 1995,for linux,1.3 in 1998 for windows and 2.0 alpha in 2000.at fist it was static,but due to advent of Java Servlets and CGI made it dynamic.earlier code was static,then latter server side code was also written in code,which was executed before it was sent back to client.At first the Dynamic content was produced with CGI.
+1> client---> Apache ---> CGI (a set of standards ) ---> CGI program
+                           a standard way of taking input and output.coding was mostly done in perl,due to it's support in string manipulation and development.
+//CGI require perl program to interpret for each request,which was overhead for high Traffic sites.to overcome this it was thought to have interpreter in Web Server itself."Embedded Interpretor",this avoids to initialize of interpretor for each request.also data can be cached between  requests.CGI is advantageous as it get destroyed after each request.
+
+request(Resource)---Apache--> (connector)--> Java Servlet Engine ,Executes appropriate code,and return result.
+JSP: Java embedded in HTML.
+1> DSO : so modules can be added and removed without recompiling the apache.
+1> Apache integrated HTTP protocol 1.1,as in 1.0 web browser have to wait for response from web server,to make the next request.in http 1.1 web browser can make multiple request at one time.
+2> apache offers cgi using
+a) mod_cgi 
+b) mod_cgid 
+_______________________________________________________________________________
+How Apache works
+4> apache 1.3 works on "preforking architecture" there apache parent process forked a set of child process which serves the request.parent process simply monitor the child and request and based on that it spawned or kill the children's. As Windows and other OS were not process based it introduces MPM.
+
+5> MPM ( Multi Processing Modules)
+
+each MPM is responsible for starting the server process  and serve request through it's child process or threads depending upon MPM implementation.at a given time we can implement only one mpm
+
+a) Prefork MPM : mimics 1.3 implementation.it creates a pool of child process,having one thread each which serves one request.by default MPM
+example : Apache starts 30 child processes, it can service 30 requests simultaneously.
+child process increase and decrease depend upon request,if a children get died,then the connection serving request will be lost.
+
+Advantage: Leaky child will killed automatically after MaxRequestsPerChild.
+disadvantage : Heavy Context Switching.,each process is separate,making IPC difficult and data sharing.also a forked children contains the same code,scripting engine,cached data (frequently access data),it will use too much memory and may result in swapping,causing performance degradation.
+
+works : a single control process forks and listen the request and serve them when they arrive.
+tip1 > ps -udaemon -opid,ppid,nlwp  // to get the threads per process,apache is configured with user apache.
+
+MaxClients : Maximum number of connections that will be processed simultaneously.
+             Prefork : 256(default),to increase this also need to increase "ServerLimit".
+			 HyBrid  : 16(Children or ServerLimit)*no of threads,25
+			 "in hybrid case the ServerLimit is 16".
+	//To increase the value just put ServerLimit in httpd.conf and change the MaxClients.
+	
+ListenBacklog : upto this no.,connection will be queued when Maxclients got reached.
+MaxRequestsPerChild  : number of requests that an individual child server will handle during its life,default 10000,if 0 then never expire not recommended to avoid memory consumption in case of memory leak.
+ 
+b) Threaded MPM : in 2.0 and higher,  creates pool of child process and each children having multiple threads each serving request.if one thread got killed (due to some module etc) then the child process will die.
+child process gets added upon spare-threads (when got less).
+child process gets removed upon idle-threads (when got less).
+All child processes run under the same user and group ID assigned to Apache server.
+//but does not work with some modules (such as PHP).
+
+Works: parent process fork the children process,each child creates fix threads (ThreadsPerChild) and one listener thread,which listens the request and assign it to other threads for processing.
+Advantage over Prefork : less resource,more stable (more children process available).
+  PID  PPID NLWP
+ 2358  2357    1   //all 4 created by root,and this one to listen
+ 2359  2357   27
+ 2360  2357   27
+ 2363  2357   27
+
+maxclient value can be changed,during graceful restart,while serverlimit can be done only after stop then start.
+
+c) perchild MPM : a fix children are created,having variable threads.
+each child process can run using a different user and gid.this makes easier to run vitual websites under different user and group.
+
+d) winnt MPM : for windows platform,it creates a parent process and child process having threads.
+
+f) what is CGI : user request for page ---> WebServer ---[CGI]----> Server side Program ---> MySQL Server
+CGI is an interface which tells the WebServer how to pass data back and forth to and from an application. 
+it describes how request information is passed in environment variables (such as request type, remote IP address), how the request body is passed in via standard input, and how the response is passed out via standard output.
+
+e) New CGI Daemon : executing CGI scripts in the threaded environment become difficult to mod_cgi,to optimize it mod_cgid was added.mod_cgid creates a "CGI Daemon" (which spawns CGI processes which interact with Threads of Apache's children) who is created at the time Webserver is started and linked it with socket.
+
+Apache child request --> CGI Daemon (which then spawns CGI process) --> Interact with Application--> and then output send to thread back.
+
+HOOKS : Server or module declare hook,and other modules register in them.
+event or phase in processing request.,modules are executed as per there turn till the last module.
+1> Connection phase: client establish connection,at this juncture we can have additional protocols,FTP.
+2> Authorization : can be done on IP,resource being seek ,can be implemented by different modules.
+3> Header Modification : modules may want to analyze or change header.or add new header in response.
+4> Content Handling : module to provide dynamic content or static content.(default does fetch the content on disk),PHP,mod_perl they allow to generate dynamic pages from scripting engine.sometime dynamic data is not produced by Apache module but by external program.so request need to transfer to external program and receive from it.BEA Weblogic,Tomcat,Jboss needs connector.
+
+request <-->module1(status)||module2(status)||module3(status).....
+       means request is passes irrespective of result in between hooks.
+
+5> FILTERS : one module output is input to another.
+
+f) Apache Portable Runtime : is to create and maintain software libraries that provide a predictable and consistent interface to underlying platform-specific implementations.it is the common library  for system -dependent functionality into a common library.
+
+Installing Apache
+
+1>  First time installation is saved to config.status
+./configure --prefix=/usr/local/apache --disable-cgi --disable-cgid
+so when u want to alter the configuration of apache use config.status thereby u can use your old configuration files,and can add/subtract options
+./config.status --disable-include
+make distclean //to reuse the source code,but destroys the config.status
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+1>sj.se configuration
+"./configure" "--prefix=/var/apache123" "--enable-proxy=shared" "--enable-ssl" "--enable-so" "--with-mpm=worker" "--enable-rewrite" "$@"  ---> sj.se
+
+2>how to run apache from different user,on port 80
+
+a) setcap cap_net_bind_service=+ep /usr/sbin/httpd  //set capabilty,explicitly to bind to a port less than 1024.
+b) getcap /usr/sbin/httpd 
+c) setcap cap_net_bind_service=-ep /usr/sbin/httpd  //to remove
+
+or by adding the start|stop command in sudoers list.
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+mod_so is basic module which provides the DSO functionality and can't be shared module.
+#./configure  --enable-mods-shared=all // to configure all modules as DSO.
+# --enable-modules=[modules_list].
+# --enable-module=so  //enables the DSO capability,by default it is enabled
+
+--enable-so   ---->>> Enables loadable module support,modules will be in shared state,not static,also in rpm installation shared modules are installed.
+
+--enable-mods-shared=most|all|a list of modules,[separated by space.]
+
+default modules can be disabled at compile time: --disable-[mod_name] .
+module name : mod_asis --->  --disable-asis
+
+Modules Description : modules provide directive,which thereby customize our application.
+1> core : Core Apache HTTP Server features that are always available
+2> prefork : Implements a non-threaded, pre-forking web server
+3> worker : Multi-Processing Module implementing a hybrid multi-threaded multi-process web server.
+4> mod_actions : This module provides for executing CGI scripts based on media type or request method.
+5> mod_alias : mapping different parts of the host filesystem in the document tree and for URL redirection
+6> mod_asis : Sends files that contain their own HTTP headers
+7> mod_auth_basic : Basic authentication
+8> mod_auth_digest : User authentication using MD5 Digest Authentication.
+9> mod_authn_alias : Provides the ability to create extended authentication providers based on actual providers
+10> mod_authn_anon : Allows "anonymous" user access to authenticated areas
+11> mod_authn_dbd  : User authentication using an SQL database
+12> mod_authn_dbm  : User authentication using DBM files
+13> mod_authn_default : Authentication fallback module
+14> mod_authn_file : User authentication using text files
+15> mod_authnz_ldap : Allows an LDAP directory to be used to store the database for HTTP Basic authentication.
+16> mod_authz_dbm : Group authorization using DBM files
+17> mod_authz_default : Authorization fallback module
+18> mod_authz_groupfile : Group authorization using plaintext files
+19> mod_authz_host : Group authorizations based on host (name or IP address)
+20> mod_authz_owner : Authorization based on file ownership
+21> mod_authz_user : User Authorization
+22> mod_autoindex : Generates directory indexes, automatically, similar to the Unix ls command or the Win32 dir shell command
+23> mod_cache : Content cache keyed to URIs.
+24> mod_cern_meta : CERN httpd metafile semantics
+25> mod_cgi : Execution of CGI scripts
+26> mod_cgid : Execution of CGI scripts using an external CGI daemon
+27> mod_charset_lite : Specify character set translation or recoding
+28> mod_dav : Distributed Authoring and Versioning (WebDAV) functionality
+29> mod_dav_fs : filesystem provider for mod_dav
+30> mod_dav_lock : generic locking module for mod_dav
+31> mod_dbd : Manages SQL database connections
+32> mod_deflate : Compress content before it is delivered to the client
+33> mod_dir : Provides for "trailing slash" redirects and serving directory index files
+34> mod_disk_cache : Content cache storage manager keyed to URIs
+35> mod_dumpio : Dumps all I/O to error log as desired.
+36> mod_echo : A simple echo server to illustrate protocol modules
+37> mod_env : Modifies the environment which is passed to CGI scripts and SSI pages
+38> mod_example : Illustrates the Apache module API
+39> mod_expires : Generation of Expires and Cache-Control HTTP headers according to user-specified criteria
+40> mod_ext_filter : Pass the response body through an external program before delivery to the client
+41> mod_file_cache : Caches a static list of files in memory
+42> mod_filter : Context-sensitive smart filter configuration module
+43> mod_headers : Customization of HTTP request and response headers
+44> mod_ident : RFC 1413 ident lookups
+45> mod_imagemap : Server-side imagemap processing
+46> mod_include : Server-parsed html documents (Server Side Includes)
+47> mod_info : Provides a comprehensive overview of the server configuration
+48> mod_isapi : ISAPI Extensions within Apache for Windows
+49> mod_ldap : LDAP connection pooling and result caching services for use by other LDAP modules
+50> mod_log_config : Logging of the requests made to the server
+51> mod_log_forensic : Forensic Logging of the requests made to the server
+52> mod_logio : Logging of input and output bytes per request
+53> mod_mem_cache : Content cache keyed to URIs
+54> mod_mime : Associates the requested filename's extensions with the file's behavior (handlers and filters) and content (mime-type, language, character set and encoding)
+55> mod_mime_magic : Determines the MIME type of a file by looking at a few bytes of its contents
+56> mod_negotiation : Provides for content negotiation
+57> mod_nw_ssl : Enable SSL encryption for NetWare
+58> mod_proxy : HTTP/1.1 proxy/gateway server
+59> mod_proxy_ajp : AJP support module for mod_proxy
+60> mod_proxy_balancer : mod_proxy extension for load balancing
+61> mod_proxy_connect : mod_proxy extension for CONNECT request handling
+62> mod_proxy_ftp : FTP support module for mod_proxy
+63> mod_proxy_http : HTTP support module for mod_proxy
+64> mod_proxy_scgi : SCGI gateway module for mod_proxy
+65> mod_reqtimeout : Set timeout and minimum data rate for receiving requests
+66> mod_rewrite : Provides a rule-based rewriting engine to rewrite requested URLs on the fly
+67> mod_setenvif : Allows the setting of environment variables based on characteristics of the request
+68> mod_so : Loading of executable code and modules into the server at start-up or restart time
+69> mod_speling : Attempts to correct mistaken URLs that users might have entered by ignoring capitalization and by allowing up to one misspelling
+70> mod_ssl : Strong cryptography using the Secure Sockets Layer (SSL) and Transport Layer Security (TLS) protocols
+71> mod_status : Provides information on server activity and performance
+72> mod_substitute : Perform search and replace operations on response bodies
+73> mod_suexec : Allows CGI scripts to run as a specified user and Group
+74> mod_unique_id : Provides an environment variable with a unique identifier for each request
+75> mod_userdir : User-specific directories
+76> mod_usertrack : Clickstream logging of user activity on a site
+77> mod_version : Version dependent configuration
+78> mod_vhost_alias : Provides for dynamically configured mass virtual hosting
+
+Apache with loadable module support and with apache extension utility "apxs", will enable you to extend the server later with third-party modules without the need to recompile.
+#and it is provided by httpd-devel package
+NOTE: If your Apache version is higher than 1.3 then you will have to use apxs2 instaed of apxs.
+
+apxs –c mod_example.c  // creates mod_example.so 
+       
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+cgi script directory : printenv and test-cgi
+can test whether the cgi configuration is working or not
+http://localhost/cgi-bin/printenv  // Prints out CGI environment variable
+that script should be removed,to secure the web server
+
+./apachectl == ./httpd -k 
+
+                       httpd.conf overview  ::
+<<<<<<<<<<<<<<____________________________________________>>>>>>
+1>Global environment configuration directives
+2>main server configuration directives
+3> virtual server configuration directives
+
+ServerRoot : TLD which contains all the stuffs,all path are relative to this.
+PidFile : file containing the PID of root process which runs as root and spawns the child process.
+Timeout : time in seconds,apache waits for I/O
+KeepAlive : persistent connection feature of HTTP 1.1,multiple request can be send over the same TCP connection,Keep-Alive connections will only be used if they are specifically requested by a client
+MaxKeepAliveRequests : number of requests allowed per connection,0 unlimited,must be high
+KeepAliveTimeout : seconds to wait for subsequent request on persistent connection,default 5,shld be maintained logically,as server process will wait for the idle clients
+
+ServerAdmin : email address,to receive if server generates error message.
+ServerName : hostname or FQDN,must be rightly configured,else issue in redirections .
+Port : default 80
+
+Reading the documentation for a Directive:
+a) Syntax
+b) Default : default value set for a directive
+c) context : in which containers/sections  it can be used,.htaccess,virtual host,directory
+d) override : Apache directives belong to different categories. The override field is
+used in specifying which directive categories can appear in .htaccess per-directory
+configuration files
+e) status : the directive belongs to : built in apache ,belongs to one of bundled modules,
+f) module : which modules provide
+
+default Apache directive containers: 
+a) VirtualHost
+b) Directory,DirectoryMatch : applies to sub-dir also
+c) location,locationMatch : applies to URL or .html
+d) files,filesMatch : applies to files ,reference to gif,jpeg 
+
+Conditional Evaluation : 
+a) ifdefine : directives will be executed if a specific cmdline argument is passed to apache executable or by modifying the apachectl script.
+
+parameter passing : -DMyModule
+
+b) ifmodule : directives will be executed if a argument (module) passed is present in web server.
+_________________________________________________________________________________________________           
+Per-Directory Configuration Files : apache provides facility to place directives outside the httpd.conf,these files can be present in filesystem.these are processed if the document requested is present in the same directory or under it's sub-directories.
+now at the time of decision making all the these files will be merged and then processed.
+example : a request is received for file
+/usr/local/apache2/htdocs/example.com
+then apache will look for configuration in below order ,
+/,/usr,/usr/local,/usr/local/apache2,/usr/local/apache2/htdocs.
+
+a)this will be a disk penalty,even if the file is not present.advantageous on making changes on configuration as it got read on each request,
+b) these files are called .htaccess by default.
+c) AccessFileName directive allows you to change the default name,.htaccess to something else also it can accept a list of file names for the same purpose.
+
+d) apache directives belongs to different groups specified in "OverRide field" in directive definition.
+1> Authconfig : authorization directives
+2> fileinfo : directives controlling file types
+3> Indexes : directive controlling ,directory index
+4> limit : directives controlling host access
+5> Options : directives controlling specific directory features.
+
+        now you can control which of the above groups can be appeared in per-directory config files.by the AllowOverride possible values(ALL|NONE|GROUP_NAME) directive.
+<Directory />
+ AllowOverride none
+</Directory>
+         disabling the per directory configuration file.
+
+		 
+Options Directive ::  controls which server features are available in a particular directory.
+[[Directory container, directives,//as written inside the directive block/container]]
+"two of such directives are : Options and AllowOverride."
+None :: No extra feature is enabled.
+All  :: All features,except MultiViews.
+ExecCGI :: Execution of CGI scripts using mod_cgi is permitted.
+FollowSymLinks :: soft links are valid within the document root.
+Includes  :: Server-side includes provided by mod_include are permitted.
+Indexes :: if index.html is not present ,then it list the directory.
+
+_________________________________________________________________________________________________
+
+Merging Rules :
+when directives are applied on the same resource,then by below priority it is resolved :
+a) Directory and per-directory files processed simultaneously.
+b) <DirectoryMatch> and <Directory>
+c) <Location> and <LocationMatch>
+d) <Files> and <FilesMatch>
+_________________________________________________________________________________________________
+
+Listen:Port : if only port then listen to all ip on sever.
+SIGHUP OR -1 : to restart the server,and reread it's configuration file.
+kill -USR1 : TO restart in graceful way,no downtime,root pid is same,children got different.works for compiled apache only
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+HTTP 1.1 : allows different website associated with same ip address,web browser identifies the right website with HOST (header) in http packet.
+
+ServerName : hostname[:80] to identify itself,used when creating self referencing URL's.
+             if hostname abc.example.com and also machine has DNS alias def.example.com
+			 then ServerName : def.example.com
+			 1> if ServerName not defined then apache makes a reverse lookup (from IP to domain).
+			 2> if port is not specified,it will take it from the client's incoming request.
+
+UseCanonicalName : use to decide for apache ,how to determine Name and port,when He have to make self referential URLs.
+                 [on|off|dns] on is default then look for ServerName to deduce the Name and port,to construct the canonical name.
+				 off - use the value sent by browser by looking HOST header,if HOST header is absent as the client is old,then deduction is done from ON case.
+      dns it will reverse infer (ip to domain,causing performance issue.)
+	  used in creation of self referential URL,that point to itself,it uses ServerName and port to construct canonical name of the server,this name is used in all self referential URLs and SERVER_NAME and SERVER_PORT for CGI scripts.
+	  if off,then it constructs with the help of client request,if they are supplied.
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
+ErrorDocument Directive : what apache will in case of error,these are 4 possible situations
+
+1> output a simple hardcoded error message : this is default behaviour
+2> output a customized message : just uncomment and replace/add the message
+ErrorDocument <Error_Code> "string_u_want_to_show"
+3> internally redirect to a local URL-path to handle the problem/error : 
+ErrorDocument <Error_Code> /cgi-bin/search.cgi  
+a) program path must be absolute,starting with /
+b) the error event is captured in Apache Environment Variables,that contain the original request,which can be used in redirected page to customize more.
+
+4> redirect to an external URL to handle the problem/error : 
+ErrorDocument 404 http://search.example.com
+in this case apache return 302 to browser,not 404
+
+//also to appeal the international customer,we can show the error in different languages,it uses mod_negotiation and mod_include.
+
+5> handling URL errors : wrong capitalization or with one letter missing or incorrect.
+abc.htm will be converted to abc.html
+
+6> Server Tokens : apache returns a Server: header,with every response,which we can customize
+ServerTokens ProductOnly             Apache
+ServerTokens Minimal                 Apache/2.0.28
+ServerTokens OS                      Apache/2.0.28 (Unix)
+ServerTokens Full                    Apache/2.0.28 (Unix) SSL/2.0. 0
+
+7> ServerSignature : when apache returns a self generated page or error page,directory listing then it returns a footer along with the ServerAdmin (email address),values:
+on: will show the footer.
+off : will not show
+
+8> Aliasing and Mapping of Resource : used to store the html/files in file system other than document root,it can map the location with any part.
+Alias /image /ftp/pub/image
+will convert  http://example.com/image/foo.gif to  /ftp/pub/image/foo.gif
+a) trailing slash if there,then it must be in client request.
+
+9> URL Redirection :
+a website changes always,but u can redesign it,as other sites holds link of your website(google.com),so u can't change a previous link with new one,instead u shld apply redirection.
+
+• permanent: Permanent redirect status (301)
+• temp: Temporary redirect status (302)  // default one.
+• seeother: The document has been replaced (303)   
+• gone: The document has been permanently removed (401).
+
+Redirect temp /news/ http://example.com/latest/news/
+http://example.com/news/index.html to http://example.com/latest/news/index.html.
+
+10> MIME types : (Multimedia Internet Mail Extension).
+              defines content type of a document. audio/mpeg,text/html
+			  first is main category,second is specific type.
+a) apache use the MIME type of a file in order to know which filter/module will process on it.
+b) also the description of a document is also send to client in response header,so that it can correctly display the content to end user.
+c) mime.types list all the specification and it's possible optional extension or extensions.
+d) TypesConfig : allows you to specify alternate file containing the mime type.
+e) AddType : to add the mime type,or by adding in mime.type file
+AddType text/xml xml  //file ending with xml will be considered of text/xml MIME type.
+f) DefaultType : text/plain  //used for those files which are not able to get mapped from mime.type
+
+g) Apache module : mod_mime_magic  peeks the file type by reading it's first few bytes.
+MimeMagicFile : enables this feature,and specifies the location of file which will help in determining the correct MIME type of a file.(conf/magic)
+//Also it affects the performance of server.
+
+h) <Location /images/>
+ForceType image/gif     //will force the files irrespective of there extension to be treated as gif
+</Location>
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+i) Content Handlers : through handlers apache knows what action need to be done on a requested content.
+modules provide the handler.example : language translation module provides Translation Handler.
+        then we can attach the handler with the documents,so it will be processed before sent to browser.
+
+1> AddHandler cgi-script .cgi .pl  //cgi-script handler tell apache to treat files as CGI scripts if they are having extension .cgi and .pl.
+
+2> SetHandler associate a handler with all files in a particular directory or location
+
+Built in handlers
+a) default-handler : default behaviour of apache is to send,the document to browser with some header.
+b) send-as-is : (from module mod_asis).send the file without adding any header,the file should have it's own HTTP header so that it can be read by browser correctly.
+c) cgi-script : process the file as cgi script.
+d) server-info : get the server config information on server status report.
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Directory Listing : a request comes to Apache of either a file or a directory.in case of directory apache looks for DirectoryIndex directive to know which file should be served.
+DirectoryIndex index.html index.htm
+
+if Directory index is not there,then the directory and files will be listed with the help of module (mod_autoindex).
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Trailing Slash: 
+correct way to call a directory is
+http://example.com/downloads/ instead of http://example.com/downloads 
+which user forget,and it will lead into error page.
+mod_dir module address this issue,by sending a redirect response to client the ( correct URL ),using ServerName 
+
+Icons for Bookmarks : Browser allows you to save an icon for a website in bookmark."favicon.ico" is the file name.
+
+AliasMatch /favicon.ico /usr/local/apache2/icons/site.ico
+
+all request will go to /usr/local/apache2/icons/site.ico,
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+CGI (Common Gateway Interface).
+1> client <--> Apache <--> CGI<---> External Programs.
+2> CERN and NCSA HTTP servers were two earlier web servers which execute external program with different ways,latter a common method is deviced (CGI) to invoke external programs.
+3> so CGI is a protocol,which is implemented by WebServer.
+4> CGI Operation:
+a) apache receives request and determines that it will go to external program
+b) apache forks a cgi daemon
+c) assigns the request to CGI daemon
+d) takes the response back from daemon,and removes some header and send to client.
+e) terminate the daemon,reclaims all the resources.
+
+Advantage of Using CGI based programs
+a) portability : will run on all web servers which implement CGI.
+b) simple : no need to learn a new language,as libraries are available for perl and C,all std output goes as such 
+c) supports executable programs,thus source hiding.
+d) no memory leak.
+
+Disadvantage
+a) for each request apache needs to start/stop the CGI interpretor.
+b) as after request completion,life is lost,so need to create new db connections.
+
+Configuring Apache :
+a) mod_cgi : used in process based MPM.
+b) mod_cgid : used in thread based MPM.CGI daemon.
+               it is started at startup time,and accept request for CGI requests.
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+1>Authentication : based on password,modules : mod_auth,mod_auth_dbm,mod_auth_digest,mod_auth_anon.
+htpasswd -c /usr/local/apache2/conf/htusers admin //c is to create the file.
+ <directory /usr/local/apache2/htdocs/private>
+ AuthType Basic    //text or digest
+ AuthName “Private Area”  //Realm of the web server
+ AuthUserFile /usr/local/apache2/conf/htusers  //passwd file location
+ Require valid-user
+ </directory>
+2> Access Control : done from Network,Environment Variables,domain Names.
+
+examples :
+Allow from 10.0.0.1 10.0.0.2 10.0.0.3
+Deny from 10.0 //will match any address starting with 10.0, such as 10.0.1.0 and 10.0.0.1.
+Allow from 10.0.0.0/255.255.255.0
+Allow from 10.0.0.0/24
+Allow from 10.0.
+
+Allow from example.com  //allow request from this domain.
+
+BrowserMatch MSIE iexplorer
+Deny from env=iexplorer        // to deny browser to link to ur site.
+
+Deny,Allow  or Allow,Deny  // second argument have high priority.
+ <location /private>
+ Order Deny,Allow
+ Allow from 10.0.0.0/255.255.255.0 example.com
+ Deny from all
+ </location>
+ 
+ Mixing the Access and authorization policy
+1: <Location /restricted>
+2: Allow from 10.0.0.0/255.255.255.0
+3: AuthType Basic
+4: AuthName “Intranet”
+5: AuthUserFile /usr/local/apache2/conf/htusers
+7: Require valid-user
+8: Satisfy any  //give the valid user or access from valid network
+9: </Location>
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Apache Logging & Monitoring :
+
+You can log nearly every aspect associated with the request,error log can not be customized but the access log.a corresponding message is displayed in access log,if some error comes in error log
+
+%a : Remote Ip address.
+%h : hostname/IP address of client,it will get only logged if ip is mapped to hostname via,reverse DNS lookup using,HostNameLookups apache directive.if it got failed then IP will get write.also it slows down the server,best to use "logresolve" --- log post processor to determine the hostnames.(if there is proxy server between them,then it will be ip address of proxy not the client).default is off
+%u : remote user,from HTTP authentication protocol.
+%l : remote user name,deduced by "identd protocol",unreliable info.default off
+--------------------------------------
+%A : IP of server
+%D : time it took to serve the request in microseconds,%T in seconds.
+%{env_variable}e : value of environment variable.
+%{time_format}t : current time.
+%v : Canonical name of the server which answered the request.
+%V : Server Name  as per UseCanonicalName directive.
+%X : status of the connection in the server.
+     x --> request was aborted,before server could send data.
+	 + --> connection is still in keep Alive state
+	 - --> connection will be closed.
+----------------------------------------
+%{cookie_name}C : value of cookie,(replaced suitably,with the cookie Name.)
+%H : request protocol HTTP or HTTPS.
+%m : request method.like GET,PUT,POST etc.
+%{header_name}i : this logs client browsers's  name and version.
+%r : URL of request.
+%q : query string,prefixed with ?
+%U : requested URL,without querystring.
+______________________________________________
+%b,%B : data size of response in bytes,(without header).if size 0: -,0
+%f : path of file served.
+%t : time when request was received.
+%{header_name}o : response header.
+%>s : final status code.(it doesn't write intermediate status code  redirect etc).
+
+Common Log Format (CLF) : 
+1> standard log format,used by many websites.
+2> many reporting and analyzing tools are made on it.
+“%h %l %u %t \”%r\” %>s %b”
+10.0.0.1 - - [19/Nov/2001:11:34:56 -0800] “GET / HTTP/1.1” 200 1456
+
+Piped logs : 
+CustomLog "|/usr/local/apache/bin/rotatelogs /var/log/access_log 86400" common
+//roatated after 1 day,using pipe the binary rotatelogs logs them ,this requires "full path" name
+
+LogLevel warn //default,can be also put on debug 
+
+Monitoring apache
+
+1> mod_info : shows modules,configuration of server
+2> mod_status : status of live running apache.
+
+<Location /server-status>    //to prevent it from public access
+SetHandler server-status     // applied handlers,for this URL (pages will be processed,before sent.
+Order deny,allow
+Deny from all
+Allow from .example.com
+</Location>
+
+<Location /server-info>
+SetHandler server-info
+Order deny,allow
+Deny from all
+Allow from .example.com
+</Location>
+
+5> logresolve < access.log > resolved.log //unix utility to resolve ip to hostname.
+http://www.coker.com.au/logtools/. to merge log files in clustered environment or seperate logging of different virtual host,these tools will fo that.
+
+(http://www.mrunix.net/webalizer/) and awstats (http://awstats.sourceforge.net).
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Environment Variables : variables to communicate between modules,and to flag certain request for special processing.
+
+SetEnv foo bar  //can be added in header,logged.
+
+accesing these variables
+a) perl :    print $ENV(foo)
+b) SSI  :    <!--#echo var=”foo” --> 
+c) logging : %{foo}e
+d) adding to header : Header set X-Foo “%{foo}e”
+e) unset :  UnsetEnv foo
+
+Some environment variables : these are present with every request
+SERVER_PORT : port at which request was made.
+SERVER_PORT : GET /POST
+QUERY_STRING ,REMOTE_ADDR,CONTENT_LENGTH 
+
+Setting the environment variables dynamically :
+
+SetEnvIf HTTP_USER_AGENT MSIE iexplorer=true //powered by mod_setenvif,sets value of iexplorer=true 
+                                               if user agent is MSIE.
+
+BrowserMatch MSIE iexplorer=1  //rewriting the same statement.
+
+Special Environment Variables :::
+
+BrowserMatch "Mozilla/2" nokeepalive   //for those clients,having problem with Keepalive
+BrowserMatch "MSIE 4\.0b2;" nokeepalive downgrade-1.0 //client request will be interpreted as 1.0
+BrowserMatch "RealPlayer 4\.0" force-response-1.0 // client who are not capable of handling 1.1
+BrowserMatch "MS FrontPage" redirect-carefully // DAV client who are unable to handle redirection request.
+ssl-unclean-shutdown, ssl-accurate-shutdown  // for buggy client side ssl implementation.
+nogzip // indicate mod-deflate not to perform compression.
+
+
+Content Negotiation :::
+
+concerns,different capabilities of client,so having different version of same resource.(like image),it also addresses multilingual website.
+
+1> Encoding : (wrapper around resource.),gzip ,encryption. header : "Content-Encoding"
+2> Character-Sets : language and character set for a resource.
+Content-Language: en
+Content-Type: text/plain; charset=ISO-8859-1  //both headers define the resource.
+
+Negotiation :
+
+Client marks it request through various headers:
+1> Accept-Encoding :encoding that browser understands.,compressed content.
+2> Accept-Language : header specifies the preferred language.
+3> Accept-Charset: character set that client supports.
+4> Accept: list the MIME type that it understands and preferences.
+5> quality Factor : Accept-Language: en; q=1.0, fr; q=0.8
+                  // also accept french documents .
+				  
+two ways to implement the Negotiation :
+
+1> Multiviews : Options +Multiviews 
+//a request index.html it will search all files in the same directory starting with index,then detect their encoding,character set and then deliver the content to client.
+
+2> Type Maps : special files,containing mapping between filenames and metadata,MIME ,language.
+   AddHandler type-map .var
+
+   we can create several option for a resource:
+
+for home.html  ,we created home.var
+URI: home.html.en
+Content-type: text/html
+Content-language: en
+URI: home.html.fr
+Content-type: text/html; charset=iso-8859-2
+Content-language: fr
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Filters : take input, process it and pass to browser or module for further processing.
+
+filters : modify the request (incoming/outgoing).
+          example PHP module is implemented as filter,which process the web page (HTML+code)==HTML
+		  and send it to browser back.
+
+mod_deflate : gzip the out-going data.
+              
+SSI : Server Side Include ,instructions embedded in HTML code,which is processed by filter 
+      implemented by filtering module mod_include.
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+DAV : document Authoring and Versioning.
+      managing content, uploaded on web server.(update,delete etc).
+	  
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Virtual Hosting :
+1> One IP one domain
+2> same hostname assigned to several ip addresses,where on each machine apache is serving request.
+3> Same ip to different hostnames.
+
+IP aliasing:
+ifconfig eth0:0 inet 192.168.128.10 netmask 255.255.255.0 up
+
+IP based Virtualization
+
+Listen 192.168.128.10:80       //listening on separate IP
+Listen 192.168.129.10:80
+<VirtualHost 192.168.128.10:80>
+DocumentRoot /usr/local/www-docs/host1     
+</VirtualHost>
+<VirtualHost 192.168.129.10:80>
+DocumentRoot /usr/local/www-docs/host2
+</VirtualHost>
+
+here u can replace ip with FQDN
+------------------------------------------------
+Name based Virtualization
+
+To mitigate the use of ip addresses,HTTP 1.1 introduces 
+Host: header ,which is filled by browser at the time of 1st request.
+
+NameVirtualHost : ip on which virtual domain will receive the request.
+
+NameVirtualHost 192.168.128.10
+Listen 192.168.128.10:80
+<VirtualHost 192.168.128.10>
+ServerName host1.example.com
+ServerAlias host1       // alternate name of main servername
+DocumentRoot /usr/local/www-docs/host1
+</VirtualHost>
+<VirtualHost 192.168.128.10>
+ServerName host2.example.com
+ServerAlias host2
+DocumentRoot /usr/local/www-docs/host2
+</VirtualHost>
+
+
+// a request is resolved by the "host:" header supplied by browser.
+//if a host say host3.example.com is configured on DNS,thereby comes to this server but there is no entry
+  in virtual host container,then request will be served by host1.example.com
+// a request which doesnot contain the "host:" header,then the first virtual container serve it.
+
+An end user from the example.com domain might have his machine set up with
+example.com as his default domain. In that case, he might direct his browser to
+http://host1/ instead of the fully qualified http://host1.example.com/. The Host
+header would simply have host1 in it instead of host1.example.com. To make sure that
+the correct virtual host container gets the request, you can use the ServerAlias directive
+
+//if u are using SSL on virtual host,then u have to use IP based virtualization.
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+SSL : Secure Sockets Layer/TLS
+      a family of cryptographic protocols,runs over http protocol.
+
+symmetric key : sender/receiver have same key to decode the message.DES,Triple DES (having different key size).Challenges :
+a) how to distribute the same key.
+b) shld be changed periodically,
+asymmetric key : sender/receiver have different key to decode the message,Public and Private key.
+                 message is encrypted via receivers public key,decrypted by receivers private key only.
+				 RSA algorithm.
+
+symmetric key is exchanged at the initial handshake phase,using public cryptography,to encrypt the communication.
+
+Message Digest : SHA,MD5.
+
+Digital Certificates : Public key,Owner Name,Address etc.Signed by third Party.(CA).
+By default, browsers include a collection of root certificates for trusted certificate authorities.
+
+Certificate is defined by X.509 ,contains CA Name,subject (holder name),Public key,Control info like date upto which it is valid,and a signature of above info.
+
+subject details :
+CN : www.ibm.com // common name
+O : IBM  // organization
+L : armonk // locality
+S : New york // state
+C : US // country
+
+
+SSL Working 
+1> user hits browser to connect to remote server.
+2> server gives the Certificate ,and exchange of keys happens.
+3> browser checks validity of certificate,issued by valid authority or not,using root CA.
+4> using public key,they create symmetric key.
+and all data is encrypted by certificate
+5> SSLCertificateChainFile /etc/httpd/conf.d/ssl/dev/ca.txt  [ca.txt=  x.crt then AddTrustUTNServerCA.crt]
+   [This starts with the issuing CA certificate of the server certificate and can range up to the root CA certificate,Such a file is simply the concatenation of the various PEM-encoded CA Certificate files, usually in certificate chain order.]
+example of order   
+1) mydomain.crt
+2) COMODORSADomainValidationSecureServerCA.crt
+3) COMODORSAAddTrustCA.crt
+4) AddTrustExternalCARoot.crt
+
+   chained certificates
+sometimes we took CSR from intermediate CA,to verify the TOP authority we need "Issued To" and "Issued By".An intermediate CA will show different information in these two fields.
+For example, if a certificate issued to "example.com" and issued by "Intermediate CA1", and the visiting web browser trusts "Root CA", trust may be established in the following manner:
+
+Certificate 1 - Issued To: example.com; Issued By: Intermediate CA 1
+Certificate 2 - Issued To: Intermediate CA 1; Issued By: Intermediate CA 2
+Certificate 3 - Issued To: Intermediate CA 2; Issued By: Intermediate CA 3
+Certificate 4 - Issued To: Intermediate CA 3; Issued By: Root CA
+
+For enhanced security purposes, most end user certificates today are issued by intermediate certificate authorities.
+all the steps are same for certification,server.key then server.csr goes to intermediate CA,which in turn provides :
+a) Regular certificate,signed by Intermediate CA behalf of root CA:// which is domain certificate.
+b) Intermediate CA file or chain certificate : // this prooves our CA is approved by root CA.
+http://xmodulo.com/harden-apache-web-server-mod_security-mod_evasive-centos.html
+SSL
+1> apache needs mod_ssl to implement ssl
+2> mod_ssl needs openssl Library.
+3> one need to have openssl and openssl devel package,to enable mod_ssl.
+4> ./configure --enable-ssl
+5> ./httpd -l //to check mod ssl is installed or not and by which means (shared or static).
+
+To move ahead,we need server.key and server.crt
+a) openssl genrsa -des3 -out server.key 1024   // des3 for passphrase and encryption,it's a private key.
+the passphrase (password),secure the private key and will be asked whenever we start the apache.one can omit des3 
+key is stored in a PEM format so that it is readable as ASCII text.
+
+b) in order to get the certificate from CA,we need to create the "certificate signing request file"
+openssl req -new -key server.key -out server.csr
+
+openssl req -noout -text -in server.csr //displays the details
+
+c) using the above csr,the CA provides the certificate,(self signed certificate).
+openssl x509 -req -days 365 -in server.csr -signkey server.key -out server.crt
+
+d) then copy the server.key and server.crt to path specified in httpd-ssl.conf
+e) and start the server.
+
+server.key    ====>    server.csr (a request file to CA) ==>  server.crt (CA gives back).
+"Server Private Key"        "A request"                      "CA creates .crt using its public key,and gives back"
+    
+Name based virtual host reads the "HTTP host header",to determine the request,while SSL uses "HTTPS" i.e there are no http header.
+
+some useful openssl commands
+1> openssl s_client -showcerts -connect www.example.com:443  //displays the public key
+"Verify return code: 0 (ok)" means certificate is properly installed.
+2> openssl x509 -in server.crt -text -noout   //diplays the crt info
+2> openssl req -in server.csr -text -noout   // displays the csr info
+2> TLS 1.0 is dervived from SSL v3.0,and TLS 1.2 is more secure.
+3> by the way of communication with server both protocol differ
+SSL means a “by port” connection to a port that expects to the session to start with security negotiation
+TLS means a “by protocol” connection where the program will connect “insecurely” first and use special commands to enable encryption.
+5> a complete chain of trust is made by two or more certificate,provided by CA.they also expire and when they do they disable the complete chain.
+6> TLS 1.2 is most secured.
+7> SSLProtocol is used to limit the usage of lower version
+8> The purpose of using an intermediate CA is primarily for security. The root key can be kept offline and used as little as possible. If the intermediate key is compromised, the root CA can revoke the intermediate certificate and create a new intermediate cryptographic pair.
+
+Listen 80
+Listen 443
+<VirtualHost _default_:443>
+ServerName www.example.com
+SSLEngine on
+SSLCertificateFile /usr/local/ssl/install/openssl/certs/www.example.com.cert
+SSLCertificateKeyFile /usr/loca/ssl/install/openssl/certs/www.example.com.key
+</VirtualHost>
+
+
+different types of certificate 
+
+1> X.509 is digital document , also called "Public Key Infrastructure" PKIX
+2> Certificates are encoded 
+a) DER : binary der encoded , .cer or .crt
+b) PEM : different types of X509.v3 files,which contain ASCII (BASE 64) , “—– BEGIN …” line
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+a module works as a interface between the apache and the s/w or package
+likewise  apache(mod_ssl) -----> openssl
+          apache(mod_php5) ----> php
+		  apache(mod_perl) ----> perl
+PHP
+1> php engine is implemented as an Apache filter.
+2> invented by Rasmus Lerdorf to replace CGI,to put more dynamism in web pages as an easy language.
+3> PHP is bulit on Zend Scripting Engine.
+4> PHP runs on a variety of operating systems and Web servers.
+5> Installing php with apache2
+./configure --with-apxs2=/usr/local/apache2/bin/apxs
+make
+make install
+6>  ./configure --with-apxs2=/usr/sbin/apxs --with-gd --with-mysql
+LAMP environment, and  php-gd.x86_64  and libpng-devel for gd support
+
+6> LoadModule php5_module modules/libphp5.so
+7> telling apache how to behave with .php extension
+<FilesMatch \.php$>
+    SetHandler application/x-httpd-php
+</FilesMatch>
+8> php -r "echo php_ini_loaded_file();"   // this tells where the php.ini file should be,
+                                          // at the the time of ./configure it generates the /etc/php.ini
+										  // then just cp the /etc/php.ini to the directory
+9> 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Tomcat :
+
+1> Servlets and JSPs are used to run Java-based Web applications.
+2> Sum Microsystem introduces java,as a rich browser based interface using embedded graphical application,"Applet".
+3> java is OOP and platform independent.
+4> "Java Servlet API" was invented to create environment to run at server side web applications.
+5> early implementation of "Java Servlet API" lead to "Apache JServ" and Sun's "Java Web Server" to execute java code.
+6> many revision happens with "Java Servlet API" but in 1999,it was joined with "JSP API" specifications.
+7> Sun donated the "Java Web Server" to "ASF" and "Jserv development" was retired.
+8> that renamed to "Tomcat" which implements "Java Servlet API" and "JSP API".
+    Tomcat 4.0 supports "Java Servlet API 2.3" and "JSP API 1.2"
+9> Servlet :  are java program,which wait for request,execute and serve the request.
+10>  servlets are launched when servlet engine is started or a request for that servlet arrives, and remains till the servlet engine is on,thereby avoiding the startup and shutdown penalty of CGI execution.
+11> JSP was more like ASP and PHP,and processed by JSP container.
+12> on the first request JSP ---> JAVA servlet source code ---> in compiled form,JVM bytecode.
+13> JSP is not parsed and compiled on each request.
+14> java code ---> servlet engine(compiles it) --> byte code ---> portable among JVMs.
+    a byte code can run on JVM running on linux machine,even if it is prepared at windows machine.
+15> Servlet Engine <------> Servlet Container.
+16> http request ---> (provides response/request)Container (running servlets for processing).
+17> as Apache can serve fast the Static content and SSL connections,so it is used with conjunction.
+18> Tomcat = Apache Jserv Protocol,(AJP) from Jserv Project + Sun's Java Web Server.
+19> AJP is mechanism to connect the external program with Servlet engine.
+20> Apache module,mod_jk speak AJP protocol with Servlet container.
+21> export  JAVA_HOME=/usr/local/java
+    export  CATALINA_HOME=/usr/local/tomcat6
+22> a division of Apache Software foundation is ----> Jakarta ,which was to provide server side solutions in JAVA.
+    tomcat is one of solution provided under Jakarta
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Redirection or Web alias ,powered by mod_rewrite engine
+
+[http://www.quanetic.com/Regex and Regex coach ],apache 2.2 provides major improvements on caching and proxying.
+http://www.askapache.com/htaccess/modrewrite-tips-tricks.html
+http://www.askapache.com/htaccess/crazy-advanced-mod_rewrite-tutorial.html
+0> mod_rewrite provides redirection and rewrite the URL dynamically.
+1> docs are present under well designed webroot/Document root //no issue
+2> docs are present other than webroot/Document root // Alias
+3> Redirection :a third approach is telling browser to make one more request to get the actual doc.
+example : content moved to bar from foo
+Redirect permanent /foo/ http://www.example.com/bar/
+note : here http://www.example.com/foo/ any URL starting with /foo/ will substituted by /bar/
+4> redirection in apache 2 is PCRE based, perl compatible regular expression,while 1.3 was upto simple regular expression.
+5> redirection rule applied on server configuration part are not applied in virtual host directives,until mentioned in that:
+RewriteEngine On
+RewriteOptions Inherit
+----------------------------------------------------------
+       Usefulness of Rewrite
+6> common use: making ugly URL beautiful,this is done,as it is easy to type,remember,tell over phone.
+http://www.example.com/cgi-bin/display.cgi?document_name=index  to 
+http://www.example.com/doc/index
+
+these type of URL are called "Clean URL" or "Permalinks: removes id from URL".
+http://www.drbacchus.com/wordpress/index.php?p=985   to
+http://www.drbacchus.com/perm/rewritemap          // more user friendly.
+
+7> directory structure changes of a website,we need to keep old URL,as they are bookmarked by user.
+8> we can have conditional rewrite,based on who is accessing,user preferred language,time of day.
+9> Following are the case where rewrite is misused: as it "consumes time and memory"
+a) Simple Redirections : a new request is made by browser to New URL
+b) RewriteRule ^/images/(.*)\.gif /jpegs/$1.jpg [L,R]
+browser is not confused what image has been send
+--------------------------
+Redirect [Original URL|directory|Virtual_host|to a new server] [Target]
+
+A single URL is affected
+Redirect /index.cfm http://www.example.com/index.php 
+means http://www.example.com/index.cfm ---> http://www.example.com/index.php 
+
+A complete directory is affected
+Redirect /pics/ http://www.example.com/images/
+http://www.example.com/pics/camel.jpg ---> http://www.example.com/images/camel.jpg
+
+complete website redirect
+Redirect / http://other.example.com/
+http://www.example.com  ----> http://other.example.com/
+
+
+ Advantage of using Redirect : Search engine indexer,indexes the new URL,and update the old one.
+        
+9> RedirectMatch is partway between Redirect and RewriteRule,with PCRE.
+
+RedirectMatch (.*)\.gif http://images.example.com$1.png
+note here (.*) will match the string after the http://domain-name/old/new.html
+i.e (.*) --->   /old/new.html
+
+PCRE
+a) .    any character
+b) \    \.   means  .   means any literal
+        \t   means <tab>
+		\d   means 0-9
+c) ^    ^A
+d) $    A$
+e) +    matches a construct one or more time. a+ ===> aa, aaa
+f) *    matches a construct zero or more time.
+g) ?    matches a construct zero or one time. e-?mail ---> email and e-mail
+h) ( )   grouping :  treating two or more character as single unit.
+ back reference / capturing : remembering the thing that matched,so we can use latter.
+        (.*\.gif)$ : capturing of file name with parenthesis can be used latter on.
+		             this value can be captured in special variable, $1 for latter use.
+				for string "canadian"	 
+Greedy	    c(.*)n   -------->  "anadia" ,will seek for more letters before n
+Non Greedy  c(.*?)n  -------->  "a" , will satisfy with one      
+
+// Essence is the string which get matched up in () can be stored in special variable. range of special variable is from $1 to $9,means max 9 parenthesis output can be captured in special variables.					 
+					 
+i) [ ]   character class,matches a single character.
+        [abc] will a single letter.
+		[1-5] match a single no between 1 to 5.
+j) [^]   negates the character class.
+        [^abc]  neither will be selected.
+k) !     !(REGEX),negates the output.
+l) (html|php) :  html or php
+PCRE
+
+l) [:alpha:] : to match literals
+m) [:digit:] : to match 0-9
+n) [:alnum:] : to match alphanumeric 
++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Server configuration part:
+
+RewriteLog /var/log/rewrite.log
+RewriteLogLevel 9   //debug mode
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Rewrite rule rewrite the requested URI to new URI.
+RewriteRule pattern target_url [flag,flag,flag,…]
+pattern : REGEX for requested URI.
+
+Context of Rewrite Rule ::::
+a)Rewrite rule can be : Main Server configuration, .htaccess , <Directory> block ,Virtual Host
+                        for per directory context rule change slightly.
+"Rewrite rule is applied to local URI only"			  
+b)Rewrite rule for Virtual Host/Main Server configuration.
+Requested URI                               Rewrite rule see
+http://example.com/one/two/three          /one/two/three
+http://example.com/one?two=three          /one
+http://example.com/index.php/one/two      /index.php/one/two :: here one and two are passed as information to 
+                                                                index.php via PATH_INFO variable.
+										
+c) Per directory context :
+all Rewrite rules in .htaccess or <Directory> block are applicable and relative to that particular directory only for which it is written especially.
+
+d) RewriteBase : used in per directory,.htaccess context
+
+The RewriteBase directive specifies the URL prefix to be used for per-directory (htaccess) RewriteRule directives that substitute a relative path.
+
+ required when you use a relative path in a substitution[target URL] in per-directory (htaccess) context when "The original request, and the substitution, are underneath the DocumentRoot (as opposed to reachable by other means, such as Alias)."
+
+DocumentRoot /var/www/example.com
+Alias /myapp /opt/myapp-1.2.3
+<Directory /opt/myapp-1.2.3>
+RewriteEngine On
+RewriteBase /myapp/
+RewriteRule ^index\.html$  welcome.html 
+</Directory>
+
+You will need to use RewriteBase in per-dir contexts where the directory was reached via an Alias, or where it becomes evident that mod_rewrite is confused as to which path to use in the rewriting.
+
+       however per directory context should be avoided : Performance and complexity.
+	   
+Per directory example.how rewrite sees the URI ::
+[[anything you can put in an .htaccess file can be put instead into a <Directory> block in the main configuration file.]]
+DocumentRoot : /usr/local/apache2/htdocs
+.htaccess    : /usr/local/apache2/htdocs/example
+
+(target File paths that do not begin with a slash are interpreted as being relative to the directory in which the rewriting is taking place)
+http://example.com/one                  Does not see this request, because it is outside of the affected directory
+http://example.com/example/index.html           index.html ("no leading slash")
+http://example.com/example/one/two/three        one/two/three (no leading slash)
+http://example.com/example/index.php?one=two    index.php (no leading slash, no QUERY_STRING)
+http://example.com/example/index.php/one/two    index.php/one/two
+	   
+RewriteRule a http://a.com/
+      can be achieved by RedirectMatch more efficiently.
+RedirectMatch a http://a.com/
+	  
+Backrefference ::
+RewriteRule ^/images/(.*)\.gif$  http://www.example.com/images/$1.png
+               $=(.*)             accessed here in $1,if two parenthesis then $2 can also be accessed.
+			   
+RewriteRule ^/index.html   -     //target URL is "-", no modification in requested URL.
+
+Rewrite rule applied in Directory block is same as applying in .htaccess file in same directory
+A URL is rewritten on browser if R flag is mentioned or provided the Fully qualified URL in rewrite rule.
+or if relative address is provided then no rewrite took place on browsers URL.
+Rewrite Flags : (Name : Abbreviation )
+a) Cookie: CO         // cookie
+                            CO=Name:Value:Domain
+RewriteRule ^/index.html - [CO=frontdoor:yes:.example.com]			   
+same rule for Per Directory Case
+RewriteRule ^index.html  - [CO=frontdoor:yes:.example.com]	
+
+b)  Env: E          // Environment variable
+RewriteRule \.jpg$ - [env=dontlog:1]   //there wont be any change in request but we can gather some info.
+
+c)  Forbidden: F    // HTTP 403 Forbidden status code
+RewriteRule (cmd|root)\.exe - [F]         // not allowed to access
+
+d) Gone: G     // HTTP 410 status code,URL no longer exist on server.
+RewriteRule \.cfm$ - [G]       //easy way to reindex the search engine.
+
+e) Handler: H   // target URL to be handled with specific content handler.
+RewriteRule  ^/thread/(.*) http://www.ex/index.php?threadid=$1    [H=application/x-httpd-php]
+
+f) Last: L    //  end of rewriting process,and no further transition would be applied on requested URL,after execution of request one time
+
+g) Next: N    // this applies the REGEX again-again till it is false on Target url.
+
+RewriteRule /(.*)-(.*) $1_$2 [N]      // - converted to _
+for /x--y-z, it is applied 3 times
+1> /(x--y)-z --> x--y_z         (greedy search)
+2> x--y_z    --> (x-)-(y_z) --> (x-)_y_z
+3> (x-)_y_z  --> (x)-(_y_z) --> x_y_z
+
+h) No Case: NC    // REGEX insensitive
+
+RewriteRule ^/article/(\d*) /var/www/index.php?articleID=$1  [NC,H=application/x-httpd-php]
+
+will match /article/12  and /Article/173
+
+i) No Escape: NE   // special character get converted to hexcode equivalent in Target URL to avoid the conversion
+                      no escape is used,so that target url match the same
+RewriteRule ^/docs/(.*) /usr/docs/directives.html#$1 [NE]  
+
+j) No Subrequest: NS  // a file includes other file ,the included files are called via apache through separate 
+                         request,which result in broken path.rule should not be applied to requests if they are subrequests.
+RewriteRule ^/ssi/(.*) /includes/files/$1 [NS]
+
+browser ---> {Reverse Proxied Server/Gateway/local Server} <----> Remote Server
+k) P : Proxy ,forces the rewritten URL to be fetched from another server,via the proxy mechanism provided by mod_proxy.
+http://www.apachetutor.org/admin/reverseproxies
+RewriteRule ^/images/(.*) http://images.example.com/new_images/$1 [P,L]
+ProxyPassReverse /images      http://images.example.com
+                [local-Path]  [URL at remote server]
+//ProxyPassReverse directive is there to ensure that any redirects issued by the back server appear to originate on the front server, so as not to confuse the browser,it replaces the response header to originating domain.
+
+It is important also to understand that any absolute URL references embedded in proxied HTML pages will not be rewritten. Thus, proxied HTML pages need to contain relative URLs, or the browser will be unable to reach the linked content.A module called mod_proxy_html exists to solve this problem,it parses the html and convert the absolute URL to required one.
+
+Some more points in configuring the Reverse proxy
+a) ProxyRequests [on|off] : set for acting as forward proxy,In a typical reverse proxy or gateway[local server] configuration, this option should be set to Off.
+b) ProxyPreserveHost  [on|off] : pass the same Host line to remote server [from local server].,should be on.
+c) there can not be any query string in rewrite rule.
+d) RewriteRule ... [P] is equal to ProxyPass,however proxypass is more efficient.
+e)
+
+http://www.apachetutor.org/admin/reverseproxies
+k) Passthru: PT       
+
+   causes the result of the RewriteRule to be passed back through URL mapping, so that location-based mappings, such as Alias, Redirect, or ScriptAlias, for example, might have a chance to take effect.
+   
+   Alias /icons /usr/local/apache/icons
+   RewriteRule /pics/(.+)\.jpg /icons/$1.gif [PT]
+   
+   In normal scene a request is modified to target by rewrite without seeking previous rules or handlers,while there may chance that a important notice/handler is there.to make such notice affect PT is used,which "match the pattern and stops" in order to get affect other URL to file map handler to make affect.
+   in absence of PT,cause Alias to be ignored,resulting in 404
+   
+
+l) Query String Append: QSA   // rewrite rule ignores the query string arguments in the received url,to avoid this 
+                                 QSA is used,in order to pass it to target
+	
+	for = /pages/123?one=two
+	RewriteRule /pages/(.+) /page.php?page=$1 [QSA]
+QSA    : (.+) == 123?one=two thereby /page.php?page=123?one=two
+normal : (.+) == 123         thereby /page.php?page=123
+
+and  	RewriteRule /old/(.*)\.html  http://localhost/index.html
+	    http://localhost/old/old.html?a=b to http://localhost/index.html?a=b
+		
+m) Redirect: R   // return HTTP 302 redirect to client,and browser makes a new request
+RewriteRule ^/images/(.*\.gif) /jpegs/$1.jpg [L,R=301]    //can send custom status code.
+
+n) Type : T     // sets the MIME type
+RewriteRule \.pl$ - [T=text/plain]       //now all perl file will be treated as plain text.
+
+--------------------------------
+
+REWRITE CONDITION
+
+Rewrite was on part of URL received,while REWRITECOND is on any variable of requested URL.
+
+RewriteCond TestString Pattern [Flags]
+
+RewriteEngine On
+RewriteCond %{REQUEST_URI} !^/index.php      //other than index file
+RewriteRule (.*) /index.php?file=$1 [PT,L]
+
+            Variable Name Description
+Client Variables     Description
+HTTP_USER_AGENT    The user’s browser product information.
+HTTP_ACCEPT        A list of the content types that this client is willing to accept.
+REMOTE_ADDR        The IP address of the requesting client.
+REMOTE_HOST        The hostname of the requesting client. same as REMOTE_ADDR  
+REMOTE_PORT        The client TCP port from which the connection was made.
+REMOTE_USER        In the case where access to the resource requires authentication, this
+                   variable contains the username with which the user authenticated.
+
+Request Variables
+HTTP_REFERER       The website address (URL) from which the user followed a link to this location.
+HTTP_COOKIE        The value of the cookie header, containing the cookies associated with the requested URL
+HTTP_HOST          The hostname portion of the URL that was requested. This is the virtual host (or the server name) from which the content was requested. This is usually consulted when doing virtual host–based rewrites.
+REQUEST_METHOD     The request method used, such as GET or POST.
+SCRIPT_FILENAME    Contains the full file path to the script that is serving the request.
+PATH_INFO          Additional data passed at the end of the URL following a slash. For
+example, in the URL http://www.example.con/index.php/more/data, the value of PATH_INFO is /more/data.
+QUERY_STRING       Additional data passed at the end of the URL following a question mark.
+For example, in the URL http://www.example.com/test.pl?one=two&three=four, the value of
+QUERY_STRING is one=two&three=four.
+AUTH_TYPE          The authentication type that was used to authenticate the user. This will usually be either BASIC or DIGEST, and it will be set only if authentication was required to reach this resource.
+
+Server Variables 
+DOCUMENT_ROOT      The value of the DocumentRoot configuration variable in the current virtual host.
+SERVER_ADMIN       The email address of the server administrator.
+SERVER_NAME        The canonical name of the current virtual host.
+SERVER_ADDR        The IP address of the current virtual host.
+SERVER_PORT        The port number from which the current request is being served.
+SERVER_PROTOCOL    The version of the HTTP protocol being used to serve the request.
+
+Date/Time Variables
+TIME_YEAR          The current year (e.g., 2006).
+TIME_MON           The current month number, with January being 01, February being 02,and so on.
+TIME_DAY           The current day of the month, with a leading zero.
+TIME_HOUR          The current hour, in the range 00–23.
+TIME_MIN           The current minute of the hour, in the range 00–59.
+TIME_SEC           The current second component of the time, in the range 00–59.
+TIME_WDAY          The day of the week, with 1 representing Monday.
+TIME               The current date and time, in the format YYYYMMDDHHmmss
+
+Other Special Variables
+THE_REQUEST        The full request sent by the browser to the server (e.g., GET /index.html HTTP/1.1).
+REQUEST_URI        The resource requested in the HTTP request line. This is probably the variable you’ll use most frequently. In the request example given for THE_REQUEST, the value of REQUEST_URI is /index.html.
+REQUEST_FILENAME   The full path to the file being requested. this is the same as the value of SCRIPT_FILENAME.
+IS_SUBREQ          Contains the value true if the request being handled is a subrequest, and false otherwise.
+HTTPS              Set to on if the request being handled is using SSL or TLS, and off otherwise.
+
+
+RewriteEngine on
+RewriteCond %{TIME_HOUR}%{TIME_MIN} >0700
+RewriteCond %{TIME_HOUR}%{TIME_MIN} <1900
+RewriteRule ^/page\.html$ page.day.html
+RewriteRule ^/page\.html$ page.night.html
+
+if both the condition is true then 1st rule is implemented,the next rule is not tied with the Rewrite.
+
+Comparison Tests :
+RewriteCond %{VARIABLE} <COMPARISION OPERATOR> ""   // = (compare operator),!,>,<,""(empty string)
+
+special tests : 
+-d : if TESTSTRING exist as file path and is a directory.
+-f : if TESTSTRING exist as file path and is a file.
+-F : Valid File and is accessible through existing permission.
+-U : Valid URL and accessible through existing permission.
+
+RewriteEngine On
+# Check to see if the file is there
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+# If it's not, then proxy the request to the other server
+RewriteRule (.*) http://oldserver.example.com$1 [P,L]
+ProxyPassReverse / http://oldserver.example.com/
+
+RewriteCond Modifier Flags
+
+a) NC : NO CASE 
+RewriteCond %{HTTP_REFERER} www.apache.org [NC]
+This condition will return true if the referer contains www.apache.org, whether it is lowercase, uppercase, or mixed case.
+
+b) RewriteCond %{HTTP_REFERER} www.apache.org [NC,OR]
+   RewriteCond %{HTTP_REFERER} httpd.apache.org [NC]
+   RewriteRule …… (Rule will be evaluated if any of the above conditions is true,bypassing the Default AND).
+   
+c) Looping 
+One very common use for RewriteCond is to prevent looping. Looping occurs when
+the target of a RewriteRule matches the original pattern. When that happens, the rule
+can be executed again on the resulting URL, causing an infinite loop of rewrites
+
+RewriteCond %{REQUEST_URI} !^/example\.html
+RewriteRule ^/example /example.html [R]
+
+another example :::: 
+
+RewriteRule (.*) /maintenance.html [R] // a loop is created,http://abc/index.html --> http:://abc/maintenance.html
+                                       then again when request reaches the server,the request pattern and final url both will be same.
+
+RewriteCond %{REQUEST_URI} !^/maintenance.html
+RewriteRule (.*) /maintenance.html [R]
+									   
+You’ll know that you are in a looping situation when you get the error message
+“Redirection limit for this URL exceeded.”
+
+RewriteOptions MaxRedirects=20 //default is 10.
+
+Always consider whether the target of your RewriteRule will cause the same rule to be executed again or some other rule to be triggered. Remember that rules operate on the result of prior rules, not on the value of the original request.
+
+redirect based on client browser ::
+RewriteCond %{HTTP_USER_AGENT} MSIE [NC]
+RewriteRule /index.html /msie_index.html [L,R]
+RewriteCond %{HTTP_USER_AGENT} Safari [NC]
+RewriteRule /index.html /safari_index.html [L,R]
+# Everybody else seems to call themselves Mozilla
+RewriteRule /index.html /moz_index.html [L,R]
+
+to stop a bot or spider
+RewriteEngine On
+RewriteCond %{USER_AGENT} evilbot [NC]
+RewriteRule . - [F]       // . means non empty request.
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+RewriteMap  // calling external to help u to do rewriting , program,DB,a file that list the mappings.
+
+RewriteMap mapname         maptype:maplocation   //General syntax of function
+          {function_name} {txt,rnd,dbm,int,prg}:location of file
+can be used like this in rewrite rule :
+RewriteRule (.*) ${mapname:$1| default}
+//$1 is acting as argument to function and default value is written if map is unable to return something
+
+txt  :: keyword1 final_url_1
+        keyword2 final_url_2
+		keyword3 final_url_3
+	
+    RewriteMap mapname   txt:/usr/local/apache2/htdocs/abc            
+    RewriteRule ^/old/(.*) ${mapname:$1|http://localhost}	//$1 is passed as argument to function.
+	
+rnd  :: static mars|jupiter
+        dynamic venus|mercury|neptune|pluto
+		
+		RewriteMap servers rnd:/usr/local/apache/conf/servermap.rnd
+        RewriteRule ^/(.*\.(png|gif|jpg)) http://${servers:static}/$1 [NC,P,L]
+        RewriteRule ^/(.*) http://${servers:dynamic}/$1 [P,L]
+		
+		one more example::::
+		random monkey|pony|elephant|fish|puppy
+		
+		RewriteMap randomimg rnd:/var/www/conf/image.map
+		RewriteRule ^/images/random.gif /var/www/images/${randomimg:random}.gif
+		
+dbm  --->  A DBM file containing one-to-one mappings in the format of the plain indexed text file format
+int  --->  internal functions provided by mod_rewrite
+           toupper --> Converts the argument to all uppercase characters
+           tolower --> Converts the argument to all lowercase characters
+           escape  --> Converts any special characters in the argument to hex encoding
+           unescape ->  Converts any hex-encoded characters back to the special characters they represent
+		   
+		   RewriteMap tolower int:tolower
+           RewriteRule ^/articles/(.*)\.html /articles/${tolower:$1}.html 
+		   
+prg  ---> An external executable program that will be called by mod_rewrite and should return a mapping based on the data it receives via standard input (STDIN).
+
+#!/usr/bin/perl
+$| = 1; # Turn off buffering
+while (<STDIN>) {
+s/-/_/g; # Replace - with _ globally
+print $_;
+}
+
+RewriteMap dash2score prg:/usr/local/apache2/conf/abc.pl  //abc.pl must be executable
+RewriteRule ^/new/(.*-).html /new/${dash2score:$1}1.html
+
+so url http://localhost/new/new-.html ---> http://localhost/new/new_.html
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Forward Proxy : taking request of client,and requesting it from there behalf.
+Reverse Proxy : when a request comes from outside world,it fetches the info from right server and send 
+                from himself.saving the servers containing critical data.
+Caching : Apache can cache frequent accessed data.
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++=
+Apache Optimization :
+
+1> OS limitations : process creation,memory limit,no of open files or connections.
+
+2> thread/process ,increase  /proc/sys/kernel/threads-max
+3> file Descriptor : whenever a process,opens a file or socket it's structure called file-descriptor is created,which is limited by OS.
+/proc/sys/fs/file-max : these many file descriptors can be opened.
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++=
+Limiting the access to filesystem for performance
+4> FollowSymLinks : symbolic links can be created for files present in file system,by default apache don't follow the symbolic links,so it need to check each file weather it is symbolic or not,which is a performance penalty.
+SymLinksIfOwnerMatch : it provides the file,if owner is matched who created the link.
+
+5> Per directory configuration : AllowOverride none to disable 
+6> content Negotiation : using a type-map file,for faster accessing of same resource in variable format.
+7> HostnameLookups: shld be disabled.
+8> mod_status : statistics of apache web,shld be off or ExtendedStatus ,detailed description of apache shld be set to off.
+
+
+                    
+
+
+
+
+
+
+
+
+
+1> Apache (1.3.x) is something called DSO (dynamic  shared object)
+//Don't need to precompile everything into webserver
+2> gcc -v  //display the compiler version and it's usage
+3> /usr/local/apache2/bin/httpd -k stop|start|
+
+4> apache needs :
+a) APR and APR-Util  // an interface which provides a set of functionality irrespective of system-arch etc
+b) Perl-Compatible Regular Expressions Library (PCRE) library // for regular expression
+c) C Compiler 
+d) perl 5 interpretor to support scripts like apxs,split-logfile,log_server_status and dbmmanage.
+e) DSO : modules are not integrated part of apache binary,that can be loaded in httpd.conf at startup.
+not recommended for production as delays start up by 20% and responses by 5%.
+
+  -D name            : define a name for use in <IfDefine name> directives
+  -d directory       : specify an alternate initial ServerRoot
+  -f file            : specify the path of conf file,if separate from the default location.
+  -C "directive"     : process directive before reading config files
+  -c "directive"     : process directive after reading config files
+  -e level           : show startup errors of level (see LogLevel)
+  -E file            : log startup errors to file
+  -v  : show version number
+  -V  : show compile settings,detailed view
+  -h  : list available command line options (this page)
+  -l  : list compiled in modules,means static modules
+  -L  : list available configuration directives
+  -S  : show parsed settings (currently only vhost settings)
+  -M  : show all loaded modules,static and shared
+  -t  : run syntax check for configuration files 
+
+
+
+________________________________________________________________________________________
+
+#./configure --help
+configure' configures this package to adapt to many kinds of systems.
+
+Usage: ./configure [OPTION]... [VAR=VALUE]...
+
+To assign environment variables (e.g., CC, CFLAGS...), specify them as
+VAR=VALUE.  See below for descriptions of some of the useful variables.
+
+Defaults for the options are specified in brackets.
+
+Configuration:
+  -h, --help              display this help and exit
+      --help=short        display options specific to this package
+      --help=recursive    display the short help of all the included packages
+  -V, --version           display version information and exit
+  -q, --quiet, --silent   do not print `checking ...' messages
+      --cache-file=FILE   cache test results in FILE [disabled]
+  -C, --config-cache      alias for `--cache-file=config.cache'
+  -n, --no-create         do not create output files
+      --srcdir=DIR        find the sources in DIR [configure dir or `..']
+
+Installation directories:
+  --prefix=PREFIX         install architecture-independent files in PREFIX
+                          [/usr/local/apache2]
+  --exec-prefix=EPREFIX   install architecture-dependent files in EPREFIX
+                          [PREFIX]
+
+By default, `make install' will install all the files in
+`/usr/local/apache2/bin', `/usr/local/apache2/lib' etc.  You can specify
+an installation prefix other than `/usr/local/apache2' using `--prefix',
+for instance `--prefix=$HOME'.
+
+For better control, use the options below.
+
+Fine tuning of the installation directories:
+  --bindir=DIR            user executables [EPREFIX/bin]
+  --sbindir=DIR           system admin executables [EPREFIX/sbin]
+  --libexecdir=DIR        program executables [EPREFIX/libexec]
+  --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
+  --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
+  --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
+  --libdir=DIR            object code libraries [EPREFIX/lib]
+  --includedir=DIR        C header files [PREFIX/include]
+  --oldincludedir=DIR     C header files for non-gcc [/usr/include]
+  --datarootdir=DIR       read-only arch.-independent data root [PREFIX/share]
+  --datadir=DIR           read-only architecture-independent data [DATAROOTDIR]
+  --infodir=DIR           info documentation [DATAROOTDIR/info]
+  --localedir=DIR         locale-dependent data [DATAROOTDIR/locale]
+  --mandir=DIR            man documentation [DATAROOTDIR/man]
+  --docdir=DIR            documentation root [DATAROOTDIR/doc/PACKAGE]
+  --htmldir=DIR           html documentation [DOCDIR]
+  --dvidir=DIR            dvi documentation [DOCDIR]
+  --pdfdir=DIR            pdf documentation [DOCDIR]
+  --psdir=DIR             ps documentation [DOCDIR]
+
+  System types:
+  --build=BUILD     configure for building on BUILD [guessed]
+  --host=HOST       cross-compile to build programs to run on HOST [BUILD]
+  --target=TARGET   configure for building compilers for TARGET [HOST]
+
+Optional Features:
+  --disable-option-checking  ignore unrecognized --enable/--with options
+  --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
+  --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
+  --enable-layout=LAYOUT
+  --enable-v4-mapped      Allow IPv6 sockets to handle IPv4 connections
+  --enable-exception-hook Enable fatal exception hook
+  --enable-maintainer-mode
+                          Turn on debugging and compile time warnings
+  --enable-pie            Build httpd as a Position Independent Executable
+  --enable-modules=MODULE-LIST
+                          Space-separated list of modules to enable | "all" |
+                          "most"
+  --enable-mods-shared=MODULE-LIST
+                         Space-separated list of shared modules to enable |
+                          "all" | "most"
+  --disable-authn-file    file-based authentication control
+  --enable-authn-dbm      DBM-based authentication control
+  --enable-authn-anon     anonymous user authentication control
+  --enable-authn-dbd      SQL-based authentication control
+  --disable-authn-default authentication backstopper
+  --enable-authn-alias    auth provider alias
+  --disable-authz-host    host-based authorization control
+  --disable-authz-groupfile
+                          'require group' authorization control
+  --disable-authz-user    'require user' authorization control
+  --enable-authz-dbm      DBM-based authorization control
+  --enable-authz-owner    'require file-owner' authorization control
+  --enable-authnz-ldap    LDAP based authentication
+  --disable-authz-default authorization control backstopper
+  --disable-auth-basic    basic authentication
+  --enable-auth-digest    RFC2617 Digest authentication
+  --enable-isapi          isapi extension support
+  --enable-file-cache     File cache
+  --enable-cache          dynamic file caching
+  --enable-disk-cache     disk caching module
+  --enable-mem-cache      memory caching module
+  --enable-dbd            Apache DBD Framework
+  --enable-bucketeer      buckets manipulation filter
+  --enable-dumpio         I/O dump filter
+  --enable-echo           ECHO server
+  --enable-example        example and demo module
+  --enable-case-filter    example uppercase conversion filter
+  --enable-case-filter-in example uppercase conversion input filter
+  --enable-reqtimeout     Limit time waiting for request from client
+  --enable-ext-filter     external filter module
+  --disable-include       Server Side Includes
+  --disable-filter        Smart Filtering
+  --enable-substitute     response content rewrite-like filtering
+  --disable-charset-lite  character set translation
+  --enable-charset-lite   character set translation
+  --enable-deflate        Deflate transfer encoding support
+  --enable-ldap           LDAP caching and connection pooling services
+  --disable-log-config    logging configuration
+  --enable-log-forensic   forensic logging
+  --enable-logio          input and output logging
+  --disable-env           clearing/setting of ENV vars
+  --enable-mime-magic     automagically determining MIME type
+  --enable-cern-meta      CERN-type meta files
+  --enable-expires        Expires header control
+  --enable-headers        HTTP header control
+  --enable-ident          RFC 1413 identity check
+  --enable-usertrack      user-session tracking
+  --enable-unique-id      per-request unique ids
+  --disable-setenvif      basing ENV vars on headers
+  --disable-version       determining httpd version in config files
+  --enable-proxy          Apache proxy module
+  --enable-proxy-connect  Apache proxy CONNECT module
+  --enable-proxy-ftp      Apache proxy FTP module
+  --enable-proxy-http     Apache proxy HTTP module
+  --enable-proxy-scgi     Apache proxy SCGI module
+  --enable-proxy-ajp      Apache proxy AJP module
+  --enable-proxy-balancer Apache proxy BALANCER module
+  --enable-ssl            SSL/TLS support (mod_ssl)
+  --enable-distcache      Select distcache support in mod_ssl
+  --enable-optional-hook-export
+                          example optional hook exporter
+  --enable-optional-hook-import
+                          example optional hook importer
+  --enable-optional-fn-import
+                          example optional function importer
+  --enable-optional-fn-export
+                          example optional function exporter
+  --enable-static-support Build a statically linked version of the support
+                          binaries
+  --enable-static-htpasswd
+                          Build a statically linked version of htpasswd
+  --enable-static-htdigest
+                          Build a statically linked version of htdigest
+  --enable-static-rotatelogs
+                          Build a statically linked version of rotatelogs
+  --enable-static-logresolve
+                          Build a statically linked version of logresolve
+  --enable-static-htdbm   Build a statically linked version of htdbm
+  --enable-static-ab      Build a statically linked version of ab
+  --enable-static-checkgid
+                          Build a statically linked version of checkgid
+  --enable-static-htcacheclean
+                          Build a statically linked version of htcacheclean
+  --enable-static-httxt2dbm
+                          Build a statically linked version of httxt2dbm
+  --enable-http           HTTP protocol handling
+  --disable-mime          mapping of file-extension to MIME
+  --enable-dav            WebDAV protocol handling
+  --disable-status        process/thread monitoring
+  --disable-autoindex     directory listing
+  --disable-asis          as-is filetypes
+  --enable-info           server information
+  --enable-suexec         set uid and gid for spawned processes
+  --disable-cgid          CGI scripts
+  --enable-cgi            CGI scripts
+  --disable-cgi           CGI scripts
+  --enable-cgid           CGI scripts
+  --enable-dav-fs         DAV provider for the filesystem
+  --enable-dav-lock       DAV provider for generic locking
+  --enable-vhost-alias    mass virtual hosting module
+  --disable-negotiation   content negotiation
+  --disable-dir           directory request handling
+  --enable-imagemap       server-side imagemaps
+  --disable-actions       Action triggering on requests
+  --enable-speling        correct common URL misspellings
+  --disable-userdir       mapping of requests to user-specific directories
+  --disable-alias         mapping of requests to different filesystem parts
+  --enable-rewrite        rule based URL manipulation
+  --enable-so             DSO capability
+
+Optional Packages:
+  --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
+  --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+  --with-included-apr     Use bundled copies of APR/APR-Util
+  --with-apr=PATH         prefix for installed APR or the full path to
+                             apr-config
+  --with-apr-util=PATH    prefix for installed APU or the full path to
+                             apu-config
+  --with-pcre=PATH        Use external PCRE library
+  --with-port=PORT        Port on which to listen (default is 80)
+  --with-sslport=SSLPORT  Port on which to securelisten (default is 443)
+  --with-z=DIR            use a specific zlib library
+  --with-sslc=DIR         RSA SSL-C SSL/TLS toolkit
+  --with-ssl=DIR          OpenSSL SSL/TLS toolkit
+  --with-mpm=MPM          Choose the process model for Apache to use.
+                          MPM={beos|event|worker|prefork|mpmt_os2|winnt}
+  --with-module=module-type:module-file
+                          Enable module-file in the modules/<module-type>
+                          directory.
+  --with-program-name     alternate executable name
+  --with-suexec-bin       Path to suexec binary
+  --with-suexec-caller    User allowed to call SuExec
+  --with-suexec-userdir   User subdirectory
+  --with-suexec-docroot   SuExec root directory
+  --with-suexec-uidmin    Minimal allowed UID
+  --with-suexec-gidmin    Minimal allowed GID
+  --with-suexec-logfile   Set the logfile
+  --with-suexec-safepath  Set the safepath
+  --with-suexec-umask     umask for suexec'd process
+
+Some influential environment variables:
+  CC          C compiler command
+  CFLAGS      C compiler flags
+  LDFLAGS     linker flags, e.g. -L<lib dir> if you have libraries in a
+              nonstandard directory <lib dir>
+  LIBS        libraries to pass to the linker, e.g. -l<library>
+  CPPFLAGS    (Objective) C/C++ preprocessor flags, e.g. -I<include dir> if
+              you have headers in a nonstandard directory <include dir>
+  CPP         C preprocessor
+
+Use these variables to override the choices made by `configure' or to help
+it to find libraries and programs with nonstandard names/locations.
+
+Report bugs to the package provider.
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Steps to run 2 RPM Apache 
+
+# cp -a /etc/httpd /etc/httpd2
+# cp -a /etc/init.d/httpd /etc/init.d/httpd2
+# cp -a /etc/sysconfig/httpd /etc/sysconfig/httpd2
+# ln -s /usr/sbin/httpd /usr/sbin/httpd2
+
+Add lines in : /etc/sysconfig/httpd2:
+HTTPD=/usr/sbin/httpd2
+OPTIONS="-f /etc/httpd2/conf/httpd.conf"
+LOCKFILE=/var/lock/subsys/httpd2
+PIDFILE=/var/run/httpd/httpd2.pid
+-------------------------------------------------------------
+change in /etc/init.d/httpd2
+if [ -f /etc/sysconfig/httpd2 ]; then
+        . /etc/sysconfig/httpd2
+fi
+
+apachectl=/usr/sbin/apachectl2
+httpd=${HTTPD-/usr/sbin/httpd2}
+prog=httpd2
+pidfile=${PIDFILE-/var/run/httpd/httpd2.pid}
+lockfile=${LOCKFILE-/var/lock/subsys/httpd2}
+--------------------------------------------------------------
+change in /usr/sbin/apachectl2 ::
+
+if [ -r /etc/sysconfig/httpd2 ]; then
+   . /etc/sysconfig/httpd2
+fi
+--------------------------------------------------------------
+chnges in /etc/httpd2/conf/httpd.conf:
+a) change the document root
+b) PidFile run/httpd2.pid  //this much is sufficient,dont put run/httpd/httpd2.pid
+Listen directive in httpd.conf and ssl.conf
+c) user and group you want to add.
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

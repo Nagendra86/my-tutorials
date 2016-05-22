@@ -1,0 +1,572 @@
+http://www.umich.edu/~dirsvcs/ldap/doc/guides/slapd/toc.html
+
+http://www.thegeekstuff.com/2015/02/openldap-add-users-groups/
+                           LDAP
+						   
+0> LDAPv3 was developed in the late 1990's to replace LDAPv2						   
+1> Need of LDAP : to fetch the information easily,quickly ,efficiently. 
+LDAP is inherintely a directory service,which contains information. : Telephone directory, Phone book.
+2> LDAP suits to environment where we have more reads ,than to updates and need to have info quickly.
+    if you use DB then it is bottleneck for application.
+
+3> A directory service implements a distributed model for storing information. example : DNS is managed by thousands of
+local administrators and is connected by "root name servers" managed by the "InterNIC".
+
+4> it works on client-server model,where server may provide the link where it can reffer the information.
+   this is an important feature of global directory service.
+
+4> roots of LDAP are closely tied to the X.500 directory service,which got termed as heavyweight due to its Architecture.as to communicate between parties/peers it requires "Open Systems Interface", a 7 layered stack
+
+5> LDAP considered to be Light weight,as it uses existing TCP/IP protocol stack,over port : 389.
+
+   Slapd Overview :
+   a) slapd supports LDAP V3,over both IPv4 and IPv6 and Unix IPC.
+   b) Simple Authentication and Security : slapd's SASL implementation utilizes Cyrus SASL software which supports a number of mechanisms including DIGEST-MD5, EXTERNAL, and GSSAPI.
+   c) Tranport Layer Security : slapd supports certificate-based authentication and data security through use of SSL/TLS.
+      slapd's TLS implementation can utilize OpenSSL, GnuTLS, or MozNSS software.
+   d) Topology Control : Access can be controlled at the socket layer,using TCP Wrappers.
+   e) Access Control : can control access to entries based on LDAP authorization information, IP address, domain name and other criteria. slapd supports both static and dynamic access control information.
+   f) Internationalization: slapd supports Unicode and language tags.
+   g) Multiple database instances : slapd can be configured to serve multiple databases at the same time.This means that a single slapd server can respond to requests for many logically different portions of the LDAP tree, using the same or different database backends.
+   h) Generic modules API : slapd consists of two distinct parts: a front end that handles protocol communication with LDAP
+   clients; and modules which handle specific tasks such as database operations.Because these two pieces communicate via a well-defined C API, you can write your own customized modules which extend slapd in numerous ways.
+   i) Threads : slapd is threaded for high performance. A single multi-threaded slapd process handles all incoming
+   requests using a pool of threads.
+   j) Replication : slapd can be configured to maintain shadow copies of directory information.
+   k) Proxy Cache: slapd can be configured as a caching LDAP proxy service.
+   
+   
+6> Some Terms :
+a) Information Model : provides Structure and Data type,required to construct LDAP Directory Tree.
+b) Entry : Basic unit in an LDAP directory.
+c) RDN (Relative Distinguished Name ) Each entry has an attribute that is unique among all siblings of a single parent.
+d) This string created by combining RDNs to form a unique name is called the node's "Distinguished Name (DN)."
+
+                                    [Directory Information Tree]
+                                          ()dc=plain,dc=org
+										  
+							()ou=devices            ()ou=people
+							
+							                                                     (Attribute and their values)
+						                            cn=gerald carter() ------> cn:geraldcarter,objectClass:person
+													                              ,sn:carter,teleno:555-1234
+									
+									             cn= "Common Name"
+												 sn= "Sur Name"
+							                     DN==   dn:cn:gerald carter,ou=people,dc=plain,dc=org
+												RDN==   cn=gerald carter
+													
+							 
+							 
+e) Access is implemented by authentication operations (bindings), query operations (searches and reads),and update operations (writes).
+
+f) LDIF : LDAP Interchange Format 
+          it contains collection of entries seperated by blank lines
+		  A mapping of attribute names to values
+		  A collection of directive to instruct the parser,how to process the information.
+		  Data in LDIF must obey the schema rule of LDAP directory.
+  Schema : Data definition for your directory.
+	       (Every item that is added or changed in the directory is checked against the schema for correctness)
+	a)  Unlike variables, however, LDAP attributes can be multivalued,assigning a new value to an attribute adds the value to the list of values the attribute already has.
+	b)  Line continuation in LDIF is implemented by leaving exactly one space at the beginning of a line	
+    c)  The original recommendation for dividing the X.500 namespace was based on geographic and national regions	
+	d)  however to maintain the uniqueness across the world 
+	(mapping an organization's domain name to an LDAP DN provides a simple way of determining the base suffix served by a
+directory and ensures that the naming context will be globally unique)
+    e)  The naming context of the directory in our examples is dc=plainjoe,dc=org
+	f) Schema specify all the known object classes and attribute types available for entries in the directory.
+	g) Objectclass : special attribute which controls the attributes required and allowed in an entry.
+	h) Object class definitions are found in directory schema.
+	h) You can add schema definitions to LDAP directories, making the LDAP entries easily extensible.
+	i) LDAP used Berkley DB: use of an embedded database and custom indexing system allows OpenLDAP to provide greater performance and scalability without loss of reliability.
+	j) 
+	
++++++++++++++++++++++++++++++++++++++++
+# LDIF listing for dn: ou=devices,dc=plainjoe,dc=org
+dn: ou=devices,dc=plainjoe,dc=org
+objectclass: organizationalUnit
+ou: devices
+telephoneNumber: +1 256 555-5446        // example of multivalue
+telephoneNumber: +1 256 555-5447
+description: Container for all network enabled    // example of line continuation
+ devices existing within the plainjoe.org domain
+userPassword: {MD5}Xr4ilOzQ4PCOq3aQ0qbuaQ==   // attribute for userpassword,prefix is MD5
+                                                (Base64 encoding of the MD5 hash) 
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+useradd.ldif
+dn: uid=sACEEUser, ou=system_users, ou=users, O=TELENOR,C=NO
+uid: sACEEUser
+userpassword: {SHA}w10MOHYRDjaL4DTXLwTWFLvtce0=    // password encoding algo : SHA
+objectclass: telenorPerson
+objectclass: organizationalPerson
+objectclass: person
+objectclass: top
+objectclass: ePerson
+sn: sACEEUser
+cn: sACEEUser
+-------------------------------------
+add_user.ldif
+dn: cn=tlopr, ou=kapaks, ou=application, ou=groups, O=TELENOR,C=NO
+changetype: modify
+add: member
+member: uid=sACEEUser, ou=system_users, ou=users, O=TELENOR,C=NO
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+	OpenLdap
+	
+OpenLDAP server will require several external software packages:
+0> gcc++ is required :  yum install gcc-c++.x86_64
+0> yum install tcp_wrappers-devel.x86_64  // requires for compilation with tcp wrapper.
+1> SSL/TLS libraries : openssl software
+2> A database manager library that supports DBM type storage facilities :  Berkley DB.
+   default DB : LMDB software
+3> Openldap Client/Server need ,Cyrus SASL libraries to provide Simple Authentication and Security Layer Services.
+4> Kerberos Authentication Service : OpenLDAP clients and servers support Kerberos authentication services. In particular, OpenLDAP supports the Kerberos V GSS-API SASL authentication mechanism known as the GSSAPI mechanism. This feature
+requires, in addition to Cyrus SASL libraries, either Heimdal or MIT Kerberos V libraries.
+4> Thread Support from OS.(Thread requirement : the replication helper daemon, slurpd)
+
+./configure --enable-wrappers
+a) --disable-threads : if you dont want thread support
+b) --enable-wrappers : uses the tcp_wrappers libraries for restricting access via the standard /etc/hosts.allow and /etc/hosts.deny (the tcpd.h header file and libwrap.a library must be installed on a local system)
+
+TCP Wrapper
+1> A TCP Wrapper is a library that provides simple access control and standardized logging for supported applications that accept connections over a network.
+2> used to filter network access to Internet.
+3> Common services such as pop3, ftp, sshd, telnet, and r-services are supported by TCP Wrappers.
+
+TCPD (TCP Wrappers) Benefits  
+a) Logging - Connections that are monitored by TCPD are reported through the syslog facility.
+b) Access Control - TCPD supports a simple form of access control that is based on pattern matching. You can even hook the execution of shell commands/script when a pattern matches.
+c) Host Name Verification - TCPD verifies the client host name that is returned by the address->name DNS server by looking at the host name and address that are returned by the name->address DNS server.
+d) Spoofing Protection.
+
+tcpd daemon - Access control facility for Internet services.
+/etc/hosts.allow - names of the hosts which are allowed to use the local INET services, as decided by the /usr/sbin/tcpd server.
+/etc/hosts.deny -  names of the hosts which are NOT Allowed to use the local INET services, as decided by the /usr/sbin/tcpd server.
+If the same client/user/ip is listed in both hosts.allow and hosts.deny, then hosts.allow takes precedence, and access is permitted. If the client is listed in hosts.allow, then access is permitted. If the client is listed in hosts.deny, then access is denied.
+tcpdchk and tcpdmatch commands - Test programs for tcpd.
+
+Both /etc/hosts.allow and /etc/hosts.deny use the following format:
+
+daemon_list : client_list [ : shell_command ]
+
+Where,
+
+daemon_list - a list of one or more daemon process names.
+client_list - a list of one or more host names, host addresses, patterns, or wildcards that will be matched against the client host name or address.
+
+c) make depend   // this construsts the dependency
+d) make          // compile the software
+e) make test
+f) /bin/su -c "make install"
+
+
+before above step we have to install Berkley DB.
+1> first check the verison supported for berkley DB in openldap : README file.
+2> download the Berkley DB.
+3> cd build_unix                        
+   ../dist/configure --prefix=/usr   --enable-compat185 --enable-dbm  --disable-static  --enable-cxx 
+   make
+   make docdir=/usr/share/doc/db-4.4.20 install 
+   chown -v -R root:root  /usr/bin/db_*  /usr/include/db{,_185,_cxx}.h  /usr/lib/libdb*.{so,la}  /usr/share/doc/db-4.4.20
+4> add the berkley db so files in ld config : 
+   include /root/db-4.4.20/build_unix/.libs   // in /etc/ld.so.conf
+   ldconfig   // to update the libs
+   ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+   --enable-compat185: This switch enables building the DB-1.85 compatibility API.
+
+   --enable-cxx: This switch enables building C++ API libraries.
+
+   --enable-dbm: Enables legacy interface support needed by some older packages.
+
+   make docdir=/usr/share/doc/db-6.1.26 install: This installs the documentation in the standard location instead of /usr/docs.
+
+   chown -v -R root:root ...:This command changes the ownership of various installed files from the uid:gid of the builder to root:root.
+
+    --enable-tcl --with-tcl=/usr/lib: Enables Tcl support in DB and creates the libdb_tcl libraries.
+
+   --enable-java: Enables Java support in DB and creates the libdb_java librarie
+   
+   Contents
+
+Installed Programs:
+db_archive, db_checkpoint, db_deadlock, db_dump, db_hotbackup, db_load, db_log_verify, db_printlog, db_recover, db_replicate, db_stat, db_tuner, db_upgrade, and db_verify
+Installed Libraries:
+libdb.so, libdb_cxx.so, libdb_java.so, and libdb_tcl.so
+Installed Directory: /usr/share/doc/db-6.1.26
+[http://www.linuxfromscratch.org/blfs/view/svn/server/db.html
+ ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+/root/openldap-2.4.43/servers/slapd/slapd.conf      // is the central source of configuration information for the OpenLDAP
+                                                   for slapd and slurpd,slapadd,slapcat
+Installed components :
+1> /usr/local/libexec/slapd : LDAP server
+2> /usr/local/libexec/slurpd : Replication helper
+3> ldapadd,ldapmodify,ldapdelete,ldapmodrdn : command line tools
+4> ldapsearch,ldapcompare : searching ldap directory,and comparing specific attribute held by an entry.
+5> ldappasswd : tool to change password attribute in ldap entry.
+6> sladd,slapcat,slapindex : tools for manipulating local backend data store used by the slapd daemon.
+7> slappasswd : generate password hashes suitable for use in slapd.conf.
+									
+/etc/openldap/ldap.conf  // used by ldapmodify and ldapsearch .
+1. # : are commented lines
+2> Parameters and associated values are separated by whitespace characters (space or tab)
+3> line starting with  blank space,continuation 
+
+/root/openldap-2.4.43/servers/slapd/slapd.conf
+a) first section contain general behaviour of LDAP server.
+b) second section contains parameter values for backend DB used.
+c) Values defined in second section will overide the values defined in first section.
+
+changes in slapd.conf
+a) 
+suffix          "dc=example,dc=com"
+rootdn          "cn=Manager,dc=example,dc=com"
+
+b) new.ldif file:
+dn: dc=example,dc=com
+objectclass: dcObject
+objectclass: organization
+o: tech
+dc: example
+
+dn: cn=Manager,dc=example,dc=com
+objectclass: organizationalRole
+cn: Manager
+
+c) ldapadd -x -D "cn=Manager,dc=example,dc=com" -W -f new.ldif
+
+some testing :
+#ldapsearch -x -b '' -s base '(objectclass=*)' namingContexts //note the usage of single quotes,marking * as simple character
+output:
+dn:
+namingContexts: dc=example,dc=com
+
+Access control Lista (ACLs) :
+ Basic Idea is "Who has Access to What"
+1> *  : Matches any connected user,including anonymous connection.
+2> self : DN of currently connected user.
+3> anonymous : non authenticated user connections
+4> user : authenticated user connections.
+5> Regular expressions : Matches a DN or an SASL entity.
+
+Access Level :
+1> write : access to update attribute value.
+2> read : read search results. (Show me all the entries with a telephoneNumber of 555*)
+3> search : access to apply search filters (Are there any entries with a telephoneNumber of 555*)
+4> compare : access to compare attribute (s your telephoneNumber 555-1234?).
+
+
+LDAP configuration model:
+1> Local directory service
+          1.Request
+client               Server
+          2.Response
+		  
+		  
+2> Local directory service with refferals
+            3.Refferal               Remote LDAP Server
+             1.Request
+client                      server
+            2.Refferal
+			
+3> Replicated Directory Service : slapd includes support for LDAP Sync-based replication, called "syncrepl", which may be used to maintain shadow copies of directory information on multiple directory servers.
+   master is a syncrepl provider and one or more slave (or shadow) are syncrepl consumers.
+   
+   
+           1.Update Request        
+client                      consumer
+           2.Refferal
+		                                        5.Provider pushes changes if refeshAndPersist syncrepl mode is used.
+		   3.New Request                           resfreshOnly mode : consumer get update on next refresh
+client                      Provider
+           4. Response
+
+
+4> Distributed Local Directory Service : In this configuration, the local service is partitioned into smaller services, each of which may be replicated,and glued together with superior and subordinate referrals.
+
+
+Ldap Config:
+
+a) OpenLDAP 2.3 and later have transitioned to using a dynamic runtime configuration engine.allows all of slapd's configuration options to be changed on the fly,withuot restart.
+b) slapd-config file supports configuration via ldif,which need to be modified by ldap utilities only.
+
+b)                                    cn=config
+                                   Global config option
+
+cn=module                          cn=schema                             olcDatabase=bdb
+A set of modules                   system schema                         A back bdb instance
+   
+                           cn=core               cn=cosine
+                          Core Schema           Cosine Schema
+						  
+c) schema definition : /usr/local/etc/openldap/schema
+d) Main ldif : /usr/local/etc/openldap/slapd.ldif
+e) slapd.conf
+  1> Global : global information/variables
+  2> Backend : 
+  3> Database Specific : (variable rules the roost in this section)
+  
+  arguments : "like that"  or "\\like that\""   to pass special character \,"  \ is used.
+  
+  Global Directive : access to <what> [ by <who> [<accesslevel>] [<control>] ]+
+                     This directive grants access (specified by <accesslevel>) to a set of entries and/or attributes (specified by <what>) by one or more requestors (specified by <who>).
+	Note: If no access directives are specified, the default access control policy, access to * by * read, allows all both authenticated and anonymous users read access.	
+
+  idletimeout 0  // wait for n seconds before forcibly closing the connection.0 means no closure.
+  loglevel <level> : default is 8.[/usr/local/libexec/slapd -d<Keyword1|Level1  Keyword2|Level2> 
+  #loglevel conns filter  // in the log file
+  below is useful table,which can be used
+  
+Level Keyword Description
+-1     any    enable all debugging
+0      no     debugging
+1 (0x1 trace) trace function calls
+2 (0x2 packets) debug packet handling
+4 (0x4 args)   heavy trace debugging
+8 (0x8 conns) connection management
+16 (0x10 BER) print out packets sent and received
+32 (0x20 filter) search filter processing
+64 (0x40 config) configuration processing
+128 (0x80 ACL) access control list processing
+256 (0x100 stats) stats log connections/operations/results
+512 (0x200 stats2) stats log entries sent
+1024 (0x400 shell) print communication with shell backends
+2048 (0x800 parse) print entry parsing debugging
+16384 (0x4000 sync) syncrepl consumer processing
+32768 (0x8000 none) only messages that get logged whatever log level is set.
+
+Note : if you want to trace function calls and watch the config file being processed, you could set level to the sum of those two levels : -d 65
+
+  Refferal :  This directive specifies the referral to pass back when slapd cannot find a local database to handle a request
+#referral ldap://root.openldap.org
+
+#sizelimit 500 // maximum no. of entries as an resultant of search query from the DB,default is 500.
+#timelimit 3600 // max seconds,can be spent for a search request,else <exceding timelimit> result will be dispalyed.
+
+General Backend Directives
+
+Backend directives apply to all databases instances of the same type and, depending on the directive, may be overridden by database directives.
+
+# backend	bdb
+# limits <who> <limit> [<limit> [...]] // Specify time and size limits based on who initiated an operation
+# readonly { on | off }  // this can put db in readonly mode.
+# rootdn <DN>  // a DN who having all access for the Db.
+rootdn "cn=Manager,dc=example,dc=com"
+
+# rootpw <password>  // specifies a password for the DN for the rootdn
+# suffix <dn suffix> // This directive specifies the DN suffix of queries that will be passed to this backend database.       Multiple suffix lines can be given, and at least one is required for each database definition.
+
+suffix "dc=example,dc=com"
+
+Queries with a DN ending in "dc=example,dc=com" will be passed to this backend.
+
+# directory /usr/local/var/openldap-data  // directory where BDB files,containing the DB and associated indices.
+
+
+  
+
+
+  
+					 
+	
+  
+  
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+          OpenLDAP: Building a Company White Pages  
+		  
+(this is to create a company directory for storing employee contact information, including postal addresses, email addresses, and phone numbers.)
+
+1> Naming context : "dc=my-domain,dc=com"
+2> will store information in People Organizational Unit : 
+                    "ou=people,dc=my-domain,dc=com"                  
+/usr/bin/ldapsearch -x -D "cn=root" -w "secret" -h "10.235.131.58" -p 389 -b "ou=voip,ou=application,ou=groups,o=telenor,c=no"	
+
+/usr/bin/ldapsearch -x -D "cn=root" -w "secret" -h "10.235.131.58" -p 389 -b "dc=my-domain,dc=com"				
+3> ObjectClass: Person              ObjectClass: OrganizationalPerson               Objectclass: InetOrgPerson
+   cn:                              title:              FAXNo.                      audio   Manager
+   sn:                              x121Address         street                      bussinesscategory mobile
+   Userpasword                      registeredaddress   PostofficeBox               carlicense  o
+   TelephoneNo                      destinationindicator postalcode                 departno   pager
+   seeAlso                          preffereddeliverymethod postaladdress           displayname  photo
+   Description                      telexno             physicalofficename          employeetype  uid
+   
+   
+   In order to support the "inetOrgPerson object class" ,we need to add the schema
+   ## Added to support the inetOrgPerson object.
+include /usr/local/etc/openldap/schema/cosine.schema
+include /usr/local/etc/openldap/schema/inetorgperson.schema
+
+4> to have refine search,we will add more index in slapd.conf
+## Indexes to maintain
+index cn,sn,mail eq,sub
+index departmentNumber eq
+
+In addition to creating an index for the cn attribute, you'll also index the surname (sn) and email address (mail) attributes. In addition to the equality (eq) index, you'll add a substring (sub) index to support searches such as "All employees whose last
+names begin with C."
+
+5> /usr/local/var/openldap-data  must have permission 700  //directory for ldap data
+
+slapd is designed to be run as a standalone service. This allows the server to take advantage of caching,manage concurrency issues with underlying databases, and conserve system resources. Running from inetd is NOT an option.
+6> starting slapd :  /usr/local/libexec/slapd
+   pid is maintained by : /usr/local/var/run/slapd.pid
+   
+   stopping slapd : Kill -INT `cat /usr/local/var/run/slapd.pid`  //ldap shld write the changes to disk
+                                                                  // kill -9 shld be avoided at all cost
+																  
+	/usr/local/libexec/slapd -f <config_file_path> 
+							 -F <slad_config_directory>   // /root/openldap-24.43/servers/slapd 
+							 -d<level>   // Logging level 
+							             // 0 is default level,slapd will automatically fork and detach itself from its controlling terminal and run in the background.
+							 
+Note: If neither option is specified, slapd will attempt to read the default config directory before trying to use the default config file. If a valid config directory exists then the default config file is ignored. 			
+
+URL Protocol Transport
+ldap:/// LDAP TCP port 389
+ldaps:/// LDAP over SSL TCP port 636
+ldapi:/// LDAP IPC (Unix-domain socket)
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+     ACCESS Control
+	 
+1> access to directory server can be configured using slapd.conf .
+2> Deafult policy : read by all clients
+3> rootdn is always allowed full rights.
+4> general form is :
+
+<access directive> ::= 
+access to <what>    // "what part" ,selects the entries and/or attributes to which the access applies
+[by <who> [<access>] [<control>] ]+  // "who part" entities granted access,"access part" specify the access granted.
+
+<what> ::= * |                               
+[dn[.<basic-style>]=<regex> | dn.<scope-style>=<DN>]
+[filter=<ldapfilter>] [attrs=<attrlist>]
+<basic-style> ::= regex | exact
+<scope-style> ::= base | one | subtree | children
+<attrlist> ::= <attr> [val[.<basic-style>]=<regex>] | <attr> , <attrlist>
+<attr> ::= <attrname> | entry | children
+
+<who> ::= * | [anonymous | users | self
+| dn[.<basic-style>]=<regex> | dn.<scope-style>=<DN>]
+[dnattr=<attrname>]
+[group[/<objectclass>[/<attrname>][.<basic-style>]]=<regex>]
+[peername[.<basic-style>]=<regex>]
+[sockname[.<basic-style>]=<regex>]
+[domain[.<basic-style>]=<regex>]
+[sockurl[.<basic-style>]=<regex>]
+[set=<setspec>]
+[aci=<attrname>]
+
+<access> ::= [self]{<level>|<priv>}
+<level> ::= none | disclose | auth | compare | search | read | write | manage
+<priv> ::= {=|+|-}{m|w|r|s|c|x|d|0}+
+<control> ::= [stop | continue | break]
+
+ what part in detail : 
+
+
+	
+
+
+	
+moving ldap 2.3 to 2.4 
+
+https://sites.google.com/site/openldaptutorial/Home/convert-slapd-to-cn-config
+[ with the help of above modify the slapd.conf file ]
+
+cp  /usr/share/openldap-servers/DB_CONFIG.example /var/lib/ldap/DB_CONFIG
+chown ldap:ldap /var/lib/ldap/DB_CONFIG
+slaptest -f /etc/openldap/slapd.conf.migrated -F  /etc/openldap/slapd.d/
+chown  -R ldap:ldap /etc/openldap/slapd.d
+chown  -R ldap:ldap /var/lib/ldap/* 
+/etc/rc.d/init.d/slapd start
+
+remove following files [ should be removed only that file which is throwing error while starting the slapd ]
+cn={1}core.ldif
+cn={2}cosine.ldif
+cn={5}inetorgperson.ldif
+
+chown  -R ldap:ldap /etc/openldap/slapd.d
+chown  -R ldap:ldap /var/lib/ldap/* 
+
+/etc/rc.d/init.d/slapd start
+
+cd /etc/openldap/slapd.d/cn=config
+mv  olcDatabase\=\{2\}bdb.ldif  /tmp/backup  // as we have now two db instance 1bdb.ldif is for default 
+
+
+Step to change the Password
+
+1> 
+[root@web ~]# ldapsearch -LLL -Y EXTERNAL -H ldapi:/// -b  cn=config olcRootDN=cn=Manager,dc=attachmentserver,dc=telenor,dc=com dn olcRootDN olcRootPW
+
+SASL/EXTERNAL authentication started
+SASL username: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
+SASL SSF: 0
+dn: olcDatabase={1}bdb,cn=config
+olcRootDN: cn=Manager,dc=attachmentserver,dc=telenor,dc=com
+olcRootPW: {SHA}5en6G6MezRroT3XKqkdPOmY/BfQ=
+
+2> 
+[root@web ~]# slappasswd -h {SHA}
+New password:                   //value
+Re-enter new password:
+{SHA}8ytnx+JjQq9C76vGdNRB3KCigcU=
+
+3>  
+[root@web ~]# ldapmodify -Y EXTERNAL -H ldapi:///
+SASL/EXTERNAL authentication started
+SASL username: gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth
+SASL SSF: 0
+dn: olcDatabase={1}bdb,cn=config
+replace: olcRootPW
+olcRootPW: {SHA}8ytnx+JjQq9C76vGdNRB3KCigcU=       // give password as above and hhit enter to execute
+
+modifying entry "olcDatabase={1}bdb,cn=config"
+
+^C
+
+verify the password
+[root@web ~]# ldapsearch -LLL -Y EXTERNAL -H ldapi:/// -b  cn=config olcRootDN=cn=Manager,dc=attachmentserver,dc=telenor,dc=com dn olcRootDN olcRootPW   // it should show new passwod
+
+
+suffix          "dc=attachmentserver,dc=telenor,dc=com"
+rootdn          "cn=Manager,dc=attachmentserver,dc=telenor,dc=com"
+
+
+test the password:
+
+ldapsearch -x -W -D "cn=Manager,dc=attachmentserver,dc=telenor,dc=com" -b "dc=attachmentserver,dc=telenor,dc=com" "(objectclass=*)"                                    
+   
+
+   
+Populate the database :
+
+slapcat -l data.ldif   // this produces the data in ldif format
+stop the slapd server as db should not be in used state while populating the content
+
+slapadd -l data.ldif -u -v -d256 // use u to have dry test
+
+chown  -R ldap:ldap /var/lib/ldap/*   // change the permission as it ran from root 
+
+service slapd start
+
+
+some more testing :
+
+1>  slaptest -u  // to test config file
+
+5> ldapsearch -d 255 -x -h localhost   // this is used to connect the slapd server.it needs must and should localhost entry
+
+/etc/hosts file
+127.0.0.1               localhost.localdomain localhost
+
+6> This lists down the contexts
+
+ldapsearch -x -b '' -s base '(objectclass=*)' namingContexts
+
+
+		 

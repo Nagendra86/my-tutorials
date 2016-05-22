@@ -1,0 +1,49 @@
+
+                           LINUX  SYSADMIN  TASKS
+						   
+1> How to find out the memory used by a user/application .
+pmap `pgrep -u 1000` | grep total | awk '{print $2}' | awk '{s+=$1}END{print s}'
+
+2>  Listing the memory used by a user/application
+
+This is because large portions of RAM shared between different Application using same libraries which will over-estimate the RSS(resident set size). If we need to see real RAM utilisation ie proportional set size (PSS) there is a command smem(Show MEMory) from kernel 2.6.27 to check actual RAM utilised by User.
+
+smem -u username
+
+3> killing a zombie process 
+A "defunct" processes is also known as a "zombie" processes.
+#ps -ef | grep defunct
+#kill -9 <defunc_pid>
+#kill parent-id-of-defunct-pid
+
+4> listing the  object files in .a file
+ar -tf /usr/lib/x86_64-linux-gnu/libjpeg.a
+
+6>  Switching a Running process to screen
+process_name
+a) ctrl+z                  // suspending the process
+b) bg %1                  // running the process
+c) disown <process_name>  // this disowns the ppid from bash to init.
+d) reptyr <pid>    // rpm needs to install
+
+
+7> Surviving a Linux Filesystem Failures (means corrupted Filesystem DS): due to power crash,Buggy device driver or utilities,kernel bugs
+a) umount the filesystem
+b) e2fsck -f /dev/sda3  // force checking even it is clean.
+c) if superblock is not found,e2fsck will return error.
+For filesystems with 1k blocksizes, a backup superblock can be found at block 8193
+For filesystems with 2k blocksizes, at block 16384
+For 4k blocksizes, at block 32768.
+or to find the location of superblock use : dumpe2fs /dev/sda3|grep -i superblock
+d) repair it with alternative superblock :
+e2fsck -f -b 8193 /dev/sda3
+
+8> force Reboot
+CASE : disk is not behaving properly,as during shutdown kernel unmounts and sync the filesystem,hence need magic.
+CASE : during shutdown kernel waits for the daemons to stop gracefully one by one via script,then unmount
+echo 1 > /proc/sys/kernel/sysrq     // activate the magic SysRq option
+echo b > /proc/sysrq-trigger        // does not attempt to unmount or sync filesystems and reboot
+echo o > /proc/sysrq-trigger        // force shut down the system
+
+
+             

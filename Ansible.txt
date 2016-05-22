@@ -1,0 +1,444 @@
+
+
+                                        ANSIBLE
+										
+										
+1> started in feb 2012
+2> ansible supports backward-compatibility.
+3> Other competitor : Puppet, Chef , Salt , CFEngine
+4> Configuration Management :
+a) State dscription of our server
+b) right packages installed
+c) configuration files contain expected values with expected permission.
+d) right services are running.
+
+DSL : "Domain Specific Lanuauge" which describes the state of server.
+
+
+5> Can be used for deployment purposes as well. 
+Capistrano , Fabric two open source deployment tools , this is All-in-One
+
+6> Orchestration of Deployment : specifying the task in order.
+like db shld be up first before web server comes up , taking web server out of load balancer doing deployment for no downtime.
+
+7> Provisionig of New Servers : 
+Amazon EC2, Azure , digital Ocean , Rackspace , any cloud that support openstack API.
+
+
+How ansible works :
+
+1> In ansible script is called Play Book.
+   # ansible-playbook webserver.yml
+   
+2>  Ansible behaviour
+
+• Ansible runs each task in parallel across all hosts.
+  a) it creates the python script for the task
+  b) copy the script on all host
+  c) execute the script ,and wait untill it finishes of on all servers
+• Ansible waits until all hosts have completed a task before moving to the next task.
+• Ansible runs the tasks in the order that you specify them.
+
+
+3> what seperates him : 
+a) Ansible Playbooks follow : "YAML file format and uses the Jinja2 Templating Languages",designed for easy to human being.
+b) Nothing to install on remote host
+c) To manage a remote host via Ansible ,we need ssh and python (2.5 and above).
+d) Ansible host must have python 2.6 and above.
+e) Its the ansible modules which requires the python specific version or above.
+f) Chef, Puppet are Pull-based : Agents installed on the servers periodically check in with a central service and pull down configuration information from the service
+g) Ansible : Push-based . changes in playbook are propagated which changes the server state.
+h) addition/removal of nodes is very easy as compared to Puppet and Chef.
+
+Ansible Power comes from built in modules,we use those modules to perform copy,install,remove,restart etc.
+
+a) Ansible modules are declarative , that defines the system state.
+user: name=deploy group=web   // user module , creates an user name deploy of group web and it will be like forever.
+
+b) Modules are Idempotent : if user exist,it wont do anything [ this marks difference with home grown script ,where
+running the shell script a second time might have a different result ] 
+c) Convergence : Ansible modules are implemented in such a way that running an Ansible playbook a single time should
+put each server into the desired state. so it maintains the system state.
+
+d) No Abstraction : have to use yum/apt according to the yum/apt based system.
+e) The Ansible project is very open to accepting modules contributed by the community.
+f) Ansible, Inc. sells training and consulting services for Ansible, as well as a proprietary
+web-based management tool called "Ansible Tower"
+
+
+Installing Ansible :
+
+1> yum install epel-release
+2> yum install ansible :
+
+
+================================================================================================================
+ Package                               Arch                       Version                              Repository               Size
+================================================================================================================
+Installing:
+ ansible                               noarch                     2.0.1.0-2.el7                        epel                     2.8 M
+Installing for dependencies:
+ PyYAML                                x86_64                     3.10-11.el7                          base                     153 k
+ libtomcrypt                           x86_64                     1.17-23.el7                          epel                     224 k
+ libtommath                            x86_64                     0.42.0-4.el7                         epel                      35 k
+ libyaml                               x86_64                     0.1.4-11.el7_0                       base                      55 k
+ python-babel                          noarch                     0.9.6-8.el7                          base                     1.4 M
+ python-httplib2                       noarch                     0.7.7-3.el7                          epel                      70 k
+ python-jinja2                         noarch                     2.7.2-2.el7                          base                     515 k
+ python-keyczar                        noarch                     0.71c-2.el7                          epel                     218 k
+ python-markupsafe                     x86_64                     0.11-10.el7                          base                      25 k
+ python-paramiko                       noarch                     1.15.1-1.el7                         epel                     999 k
+ python-pyasn1                         noarch                     0.1.6-2.el7                          base                      91 k
+ python-six                            noarch                     1.9.0-2.el7                          base                      29 k
+ python2-crypto                        x86_64                     2.6.1-9.el7                          epel                     475 k
+ python2-ecdsa                         noarch                     0.13-4.el7                           epel                      83 k
+ sshpass                               x86_64                     1.05-5.el7                           epel                      21 k
+
+Transaction Summary
+============================================================================================================
+Install  1 Package (+15 Dependent packages)
+
+Total download size: 7.1 M
+Installed size: 31 M
+
+  Installing : python-six-1.9.0-2.el7.noarch                                                                                     1/16
+  Installing : python2-ecdsa-0.13-4.el7.noarch                                                                                   2/16
+  Installing : sshpass-1.05-5.el7.x86_64                                                                                         3/16
+  Installing : python-babel-0.9.6-8.el7.noarch                                                                                   4/16
+  Installing : python-pyasn1-0.1.6-2.el7.noarch                                                                                  5/16
+  Installing : libtommath-0.42.0-4.el7.x86_64                                                                                    6/16
+  Installing : libtomcrypt-1.17-23.el7.x86_64                                                                                    7/16
+  Installing : python2-crypto-2.6.1-9.el7.x86_64                                                                                 8/16
+  Installing : python-keyczar-0.71c-2.el7.noarch                                                                                 9/16
+  Installing : python-paramiko-1.15.1-1.el7.noarch                                                                              10/16
+  Installing : python-httplib2-0.7.7-3.el7.noarch                                                                               11/16
+  Installing : python-markupsafe-0.11-10.el7.x86_64                                                                             12/16
+  Installing : python-jinja2-2.7.2-2.el7.noarch                                                                                 13/16
+  Installing : libyaml-0.1.4-11.el7_0.x86_64                                                                                    14/16
+  Installing : PyYAML-3.10-11.el7.x86_64                                                                                        15/16
+  Installing : ansible-2.0.1.0-2.el7.noarch                                                                                     16/16
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++=
+
+[root@localhost ~]# ansible --version
+ansible 2.0.1.0
+  config file = /etc/ansible/ansible.cfg
+  configured module search path = Default w/o overrides
+
+  
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Public cloud service is offered by amazon -EC2, digital ocean , rackspace
+ 
+Vagrant is a free tool to manage virtual machines.
+
+1> Install openssh and cmder 
+2> vagrant ssh on cmder
+
+playbook path :  D:\HashiCorp\Vagrant\Project3\playbooks
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Telling Ansible about test machine :
+
+1> on acs [ ansible control server ]
+mkdir excercise1
+cd excercise1
+vi inventory       // put the below entry
+[localhost ansible_connection=local]
+[ web ansible_ssh_host=192.168.33.20 ansible_ssh_port=22 ansible_ssh_user=vagrant ansible_ssh_private_key_file=/home/vagrant/hostkeys/web_private_key ]
+
+1> we called this machine as web
+2> whose ip is "192.168.33.20"
+3> need to conenct on port 22
+4> with which user : vagrant
+5> defined the private key path ,this can be manged using : ssh-agent
+6> permission of /home/vagrant/hostkeys is 700
+7> permission of web_private_key is 600
+
+ansible <ip/all> -i inventory -u vagrant -m ping -k   //module ping, k to ask passowrd.
+ansible <ip> -i inventory -s -a "tail /var/log/maillog"  // command module is default module, a for argument, s for sudo
+
+ansible -i inventory -s -m apt -a name=nginx // this installs nginx using apt module on ubuntu
+
+ansible -i inventory -s -m service -a "name=nginx state=restarted"  // service module, restarts the sshd service
+
+ansible 192.168.33.20 -i inventory  -m copy -a  "src=/home/vagrant/excercise1/inventory dest=/etc/" -k  // copy module
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+     playbook
+	 
+Prerequisite :
+
+config.vm.network "forwarded_port", guest: 80, host: 8080
+config.vm.network "forwarded_port", guest: 443, host: 8443
+
+port forwarding is done for vagrant machine ,as those are command line interfaces and we couldn't see the browser content for the softwares running inside the vagrant machine.so we will use our local machine browser to open like below :
+
+http://localhost:8080/
+https://localhost:8443/
+
+this will be forwarded to port 80 and 443 respectively.
+
+vagrant reload // this reloads the configuration of a vbox
+
+
+# to execte a playbook:
+ansible-playbook web-notls.yml
+ansible-playbook web.yml --check --diff  // what changes are going to happen,[not all modules support this]
+                                         // diff between old and new files
+ansible-playbook -vvv web.yml   // running in verbose mode
+ansible-playbook --list-tasks web.yml  // list out the Tasks
+
+GATHERING FACTS ::: when ansible connects to a remote machine it tries to capture some basic information:
+                    which OS it is, hostname , IP, MAC address of all interfaces and etc
+					
+
+	PLAYBOOKS  ------------------>>>
+	
+1> Ansible playbooks are written in YAML syntax.
+2> YAML concepts 
+
+---       // begining of the document  [ OPTIONAL ]
+
+#          // marks  the comments
+
+this is lovely    // Strings are not bound to be Quoted
+
+True/False        // Booleans
+
+
+- My Fair Lady                   // Lists/Array sequences 
+- Oklahoma                       // Delimited by -
+- The Pirates of Penzance        // So here we have 3 values in an array
+
+
+address: 742 Evergreen Terrace      // Dictionaries/mapping or Structure in C
+city: Springfield
+state: North Takoma
+
+
+address: >                          // Line Folding , \n will be replaced by SPACE
+Department of Computer Science,
+A.V. Williams Building,
+University of Maryland
+
+vars:
+ key_file: /etc/nginx/ssl/nginx.key   // defined a variable in var section
+ 
+usage : copy: src=files/nginx.key dest={{ key_file }} owner=root mode=0600
+
+vars_files:
+    - input.yml         // define variable in a seperate file.
+
+
+
+a)Playbook is a list of plays
+b)Every play must contain:
+• A set of hosts to configure
+• A list of tasks to be executed on those hosts
+[Each task is associated with exactly one module]
+c) name : describes the play
+d) sudo : If true, Ansible will run every task by sudo’ing as (by default) the root user
+e) ansible-doc <module_name>   // list out the documentation of a module
+f) Playbook Output // Ansible modules first check to see if state of host needs to be changed before taking any action
+• ok : if the state of host,matches the arguments to module
+• changed : if the state of host, doesn't matches the arguments to module
+• Ansible’s detection of state change can be used to trigger additional actions through the use of handlers
+
+Handlers :
+1> Handlers only run after all of the tasks are run
+2> they only run once, even if they are notified multiple times. 
+3> They always run in the order that they appear in the play, not the notification order.
+4> common usage is to restart the service upon state change
+
+Ansible uses the Jinja2 template engine to implement templating
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Inventory: Describing Your Servers
+ 
+1> The collection of hosts that Ansible knows about is called the inventory.
+2> Ansible uses your local SSH client by default
+3> There is one host that Ansible automatically adds to the inventory by default: localhost.
+4> if the locally installed SSH client supports a feature called ControlPersist, Ansible will use the local SSH client.
+
+Grouping :
+
+1>
+vagrant1 ansible_ssh_host=127.0.0.1 ansible_ssh_port=2222
+vagrant2 ansible_ssh_host=127.0.0.1 ansible_ssh_port=2200
+vagrant3 ansible_ssh_host=127.0.0.1 ansible_ssh_port=2201
+virginia.example.com
+
+[vagrant]
+vagrant1
+vagrant2
+vagrant3
+
+2>
+grouping groups:
+
+[django:children]
+web
+task
+
+3>
+
+web1.example.com
+
+[web]
+web[1:20].example.com
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Variables and Facts :::
+
+1> debug module : One can use this for debugging purposes.
+
+a) use this just after the variable got substituted with a value.
+
+    - name: Copying File
+      action: copy src={{ input }} dest=/tmp
+      notify: restart crond
+
+    - name: Debug Input file Name
+      action: debug var=input   // when we run the playbook it prints out the value of input
+	  
+b) Registering Variable :
+One may require to store the result of a task in a variable for latter use or making some conditions.The value of a variable set using the register clause is always a "dictionary".
+
+   - name: Using the Command Module
+     action: command id -un
+     register: login    // using register clause we register the output of command executed above
+	 
+	---------Output Analysis: -----------------
+	 
+	 ok: [web] => {    // running on which server
+    "login": {
+        "changed": true,  // True is by default for command and shell module
+        "cmd": [          // invoked command as list of strings 
+            "id",
+            "-un"
+        ],
+        "delta": "0:00:00.002277",
+        "end": "2016-05-16 03:56:26.029947",
+        "rc": 0,             // the RETURN CODE,non-zero means ansible fails to execute it
+        "start": "2016-05-16 03:56:26.027670",
+        "stderr": "",        // text written to std error as a sinlge string
+        "stdout": "vagrant",  // text written to std output as a sinle string
+        "stdout_lines": [     // contains any text written to split by newline.
+            "vagrant" 
+        ],
+        "warnings": []
+    }
+}
+
+
+3> To Derefference the value of stored variable using register clause :
+
+    - name: Printing out the variable value
+      action: debug msg="Logged in as user {{ login.stdout }}"
+
+4> If a task fails ansible stops executing further tasks on that host,we can bypass it by using :
+   
+   - name: Run myprog
+     command: /opt/myprog
+     register: result
+     ignore_errors: True     //ignore_errors clause set to true
+	 
+5> The shell module has the same output structure as the command module, but other modules contain different keys.
+
+6> Before any task is excuted by ansible,it gather the detials of host in a variable : "facts"
+
+  hosts: webserver
+  gather_facts: True
+
+  tasks:
+   - name: print out all
+     action: setup     // setup module is used to gather the system parameters
+     register: all
+
+   - name: print out all values
+     action: debug var=all
+	 
+   - name: printing the desired value
+     action: debug msg="I want this only {{ all.ansible_facts.ansible_distribution }}"
+
+	 
+7> Built in Variables :
+"these variables are useful if u dont use the setup method"
+a) hostvars : In ansible Variables are scoped by host.
+              we define a variable in playbook which is used by Ansible for each host in the group.
+			  There might be usage of variable of another host in some other host
+			  This is a dictionary that contain all of the variables on defined on all hosts,keyed by hostname.
+			  
+			  hostvars['<hostname>'].ansible_eth1.ipv4.address
+			  hostvars['web'].ansible_eth1.ipv4.address   // our scenario
+			  
+
+
+8> Setting variables on the command line :
+
+ansible-playbook example.yml -e token=12345    // overriding the variable defined in the playbook , having highest precedence.
+
+ansible-playbook greet.yml -e 'greeting="hi there"'
+
+
+    Complex Playbooks
+
+1> Running playbook on localhost not on Remote host
+
+untill now we used :   "action" clause which describes the module and its variable which will be executed on remote host.
+                        To run a task on local machine instead of remote machine ,we can use "local_action" clause.
+	                    We cannot use "action" with "local_action".
+
+Note : Even if we use local_action all the ansible-variables associate remote values
+
+  
+10> Waiting for a condition to be true :
+local_action: wait_for port=22 host="{{ inventory_hostname }}" search_regex=OpenSSH
+
+use wait_for module , very very important if you are doing some thing on remote host and if it takes some time,say stop-start of an application server.
+
+11> Want  to execte task on some other host than to applicables
+delegate_to clause
+delegate_to: name_of_host_where_u_want_to_run
+
+12> Running on One Host at a Time 
+* By default ansible runs the task in parallel across to all hosts
+* Example : deployment
+
+Use "serial Clause"
+
+- name: serial execution
+  hosts: webserver
+  serial: 1   // 1 host at a time
+  max_fail_percentage: 24
+  
+* Once you use it,it will execute all tasks one by one only
+* Normally, when a task fails, Ansible stops running tasks against the host that fails, but continues to run against other hosts,if have used "ignore_error" set failure percentage to 24 [ 4 hosts ] if one fails it will exit
+ 
+ 
+13> Running a task Single time
+use "run_once: 1" clause against an action 
+
+14> changed_when and failed_when
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

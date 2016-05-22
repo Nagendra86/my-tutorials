@@ -1,0 +1,1158 @@
+                                      
+									  TOMCAT 
+									  
+	
+	How A Servlet Container Works : 
+	         Servlet programming is possible through the classes and interfaces provided by :
+			 javax.servlet and javax.servlet.http packages,
+			 most important javax.servlet.Servlet interface
+			 servlet container does 3 things to service a request for a servlet
+			 a) create a "Request Object" and populate it with : parameters,headers, cookies, query string, URI etc.
+			 b) these parameters to be used by invoked servlet.
+			 c) Request object is instance of interface :  javax.servlet.ServletRequest
+			                                               javax.servlet.http.ServletRequest
+														   
+	         d) creates a "Response Object",which is returned to web client.
+			               it is instance of interface  :  javax.servlet.ServletResponse 
+						                                   javax.servlet.http.ServletResponse
+			
+			 e) Invokes the "Service Method" of servlet and passing the "Request and Response Object".
+			    
+			 f)	it calls "Destroy Method" before removing servlet instance.it happens when all threads under "Service Method" have exited or after a timeout period has passed. and clean all resources held by servlet : memory,file,handles,threads.
+			 
+			 g) Servlet container calls the "Init Method" of servlet after the servlet class is instantiated.
+				
+			 
+			 CATALINA : a modular software,contains two important modules "CONNECTOR and CONTAINER".
+			           CONNECTOR : it makes Request/Response object for each HTTP Request.
+					               passes the objects to CONTAINER.
+					   CONTAINER : receives object and invokes servlet's "Service Method".
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++					   
+ Tomcat 5 supports Servlet 2.4 and JSP 2.0 specifications, Tomcat 4 supports Servlet 2.3 and JSP 1.2.
+ Tomcat 5 has a more efficient default connector than Tomcat 4.
+ Tomcat 5 shares a thread for background processing whereas Tomcat 4's components all have their own threads for background processing. Therefore, Tomcat 5 uses less resources in this regard.
+ Tomcat 5 does not need a mapper component to find a child component, therefore simplifying the code.
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+A Simple Web Server : a java web server contains two important classes :
+                                        a)  java.net.Socket  // to create socket
+										b)  java.net.ServerSocket  // It wait for connection requests from clients.
+* Once the server socket gets a connection request, it creates a Socket instance to handle the communication with the client.
+* Binding Address : The IP address the server socket is listening on .
+* Backlog : maximum queue length of incoming connection requests before the server socket starts to refuse the incoming requests.
+										
+	* HTTP protocol enables SERVER and CLIENT to communicate over internet.									   
+    * HTTP Requests : Method - URI - Protocol
+	                  Request headers
+					  Entity body  // query string or any data for processing.
+
+POST /examples/default.jsp HTTP/1.1	 // Methods : GET, POST, HEAD, OPTIONS, PUT, DELETE, and TRACE 				  
+Accept: text/plain; text/html        // URI  : always begins with "/" , marks the server root Directory.
+Accept-Language: en-gb
+Connection: Keep-Alive
+Host: localhost
+User-Agent: Mozilla/4.0 (compatible; MSIE 4.01; Windows 98)
+Content-Length: 33 Content-Type: application/x-www-form-urlencoded 
+Accept-Encoding: gzip, deflate 
+lastName=Franks&firstName=Michael    // Entity Body
+
+    * HTTP Response : Protocol—Status Code—Description
+	                  Response headers
+					  Entity body   // Response of the query 
+					  
+HTTP/1.1 200 OK 
+Server: Microsoft-IIS/4.0 
+Date: Mon, 5 Jan 2004 13:13:33 GMT 
+Content-Type: text/html 
+Last-Modified: Mon, 5 Jan 2004 13:13:12 GMT 
+Content-Length: 112 
+<html>                    // Entity Body
+<head> 
+<title>HTTP Response Example</title> 
+</head> 
+<body> Welcome to Brainy Software </body> 
+</html>
+
+                   JAVA WEB SERVER and CONTAINER
+
+* Repository : Location where a class loader can find "Servlet Classes" in servlet container.
+* the Connector parses HTTP request headers and creates Request/Response Object and passes it to Container which enables a Servlet and pass headers, cookies, parameter names/values.
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Getting Started with Tomcat : 
+a) Installing Tomcat : it comes in two format,source and compiled.
+b) tomcat 6 requires java 5,but can be used java 6 ,for it's additional capabilities.
+c) binary release :
+   * can be installed in an directory,with any userid
+   * but not tracked by Package Manager,difficult when upgrade/uninstall.
+   * doesn't have init script 
+   
+d) RPM Package :
+   * easy uninstall and upgrades via rpm.
+   * install init script fro stop/start.   
+ 
+e) due to security reasons,create tomcat user with low privileges and run Tomcat as that user.
+f) useradd  -s /sbin/nologin -d /opt/tomcat/temp tomcat  // and group :: Nobody 
+   RELEASE-NOTES : contains the known issue of this Tomcat version.
+g) chown -R tomcat apache-tomcat-6.0.14
+h) 
+
+Script under bin directory :
+catalina  : The main Tomcat script. This runs the java command to invoke the Tomcat startup and shutdown classes.
+digest    : This makes a crypto digest of Tomcat passwords. Use it to generate encrypted passwords.
+setclasspath : used internally and sets the Tomcat classpath and several other environment variables.
+shutdown : This runs catalina stop and shuts down Tomcat.
+startup : This runs catalina start and starts up Tomcat.
+tool-wrapper : generic Tomcat command-line tool wrapper script that can be used to set environment variables
+and then call the main method of any fully qualified class that is in the classpath that is set. This is
+used internally by the digest script.
+version : This runs the catalina version, which outputs Tomcat’s version information.
+
+
+General Usage :
+a) ./catalina.sh  start|stop|run 
+Standard Output and Error : CATALINA_HOME/logs/catalina.out
+b) -config [server.xml file] This specifies an alternate server.xml configuration file to use. The default is to use
+                             the "server.xml" file that resides in the $CATALINA_BASE/conf directory. 
+c)     -help  This prints out a summary of the command-line options.
+d) -nonaming  This disables the use of JNDI within Tomcat.
+e) -security  This enables the use of the catalina.policy file.
+f)     debug  This starts Tomcat in debugging mode.
+g)  embedded  This allows Tomcat to be tested in an embedded mode, usually used by application server developers.
+h) jpda start This starts Tomcat as a Java Platform Debugger Architecture-compliant debugger.
+                 http://java.sun.com/products/jpda. 
+i)       run  This starts up Tomcat without redirecting the standard output and errors.
+
+Environment Variables :
+
+Options                            Purpose                                                 Default
+CATALINA_BASE      It is the base directory for writable or customized portions of    Tomcat Installation Directory
+                   a Tomcat installation tree,such as logging files,work directories,
+                   conf directory,webapps directory. It is an alias for CATALINA_HOME.
+                   "Base directory for resolving dynamic portions of a Catalina Installation"
+
+CATALINA_HOME      This sets the base directory for static (read-only) portions of    Tomcat Installation Directory
+                   Tomcat, such as Tomcat’s lib directories and command-line scripts.
+
+CATALINA_OPTS      This passes through Tomcat-specific command-line options to          None
+                   the java command.when start,run command is executed
+				   
+CATALINA_OUT       Full path to a file where stdout and stderr                      $CATALINA_BASE/logs/catalina.out
+                   will be redirected.       
+CATALINA_TMPDIR    directory for Tomcat temporary files.Used by JVM                   $CATALINA_HOME/temp
+JAVA_HOME          location of the Java runtime or JDK that Tomcat will use.            None
+JRE_HOME           This is an alias to JAVA_HOME.                                       None
+JAVA_OPTS          This is where you may set any Java command-line options.             None
+                   used when start/stop/run command is executed.
+JPDA_TRANSPORT     This variable may set the transport protocol used for JPDA           dt_socket
+                   debugging.JPDA transport used when the "jpda start"
+				   command is executed.
+JPDA_ADDRESS       This sets the address for the JPDA used with the catalina            8000
+                   jpda start command.
+JSSE_HOME          This sets the location of the Java Secure Sockets Extension used     None
+                   with HTTPS.
+CATALINA_PID       This variable may optionally hold the path to the process ID file    None
+                   that Tomcat should use when starting up and shutting down.
+
+JAVA_ENDORSED_DIRS Lists of colon separated directories containing some jars in order     $CATALINA_HOME/endorsed
+                   to allow replacement of APIs created outside of the JCP (i.e. DOM and SAX from W3C).
+                   It can also be used to update the XML parser implementation.
+				   
+LOGGING_CONFIG      Override Tomcat's logging config file.
+                    LOGGING_CONFIG="-Djava.util.logging.config.file=$CATALINA_BASE/conf/logging.properties"
+					
+LOGGING_MANAGER     Override Tomcat's logging manager
+                    LOGGING_MANAGER="-Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager"
+
+
+JAVA Provides :  rt.jar ,jsse.jar , charsets.jar ,tools.jar ,localedata.jar ,plugin.jar ,javaws.jar,deploy.jar
++++++++++++++++++++++++++++++++++++++++++
+
+tomcat uses port : 
+8080 : default Tomcat HTTP server socket port.
+8005 : default Tomcat shutdown server socket port
+
+When we stop the Tomcat,this may be the situation :
+a) Java Servlet Specification don't impose any time limit how long any servlet can run.
+b) Java Servlet Specification dictates on shutdowns,servlet container must wait for each servlet to finish serving to all request which are in progress or waiting for a timeout before taking servlet out of service.
+    For Tomcat 6 ,Timeout is 1/2 sec per servlet.
+c) sometimes thread may be in blocked state,to get out of CPU.
+d) jps | grep Bootstrap   // to check any instance of tomcat.
+"it comes with JAVA"
+
+Script to make a binary package of Tomcat to stop start
+same can be copied to /etc/init.d/tomcat ,this will work with "service command" 
+and also it can be set to run at boot time.
+NOTE :CATALINA_HOME,JAVA_HOME ENV Variables must be "export" before tomcat is going to start.
++++++++++++++++++++++++++++++++++++++++++
+#!/bin/sh
+# Tomcat init script for Linux.
+#
+# chkconfig: 2345 96 14
+# description: The Apache Tomcat servlet/JSP container.
+#JAVA_HOME=/usr/java/jdk1.6.0_02
+CATALINA_HOME=/home/s/Desktop/apache-tomcat-6.0.41
+export JAVA_HOME CATALINA_HOME
+#export  CATALINA_HOME
+exec $CATALINA_HOME/bin/catalina.sh $*
++++++++++++++++++++++++++++++++++++++++++
+   TOMCAT HISTORY 
+a) Sun Microsystem first introduces the JWS(Java Web Server) ,the first "Servlet Container" to world.
+b) but it was not successful : largely due to Java still being new, and servlets being only recently introduced
+c) Apache’s JServ and CERN/W3C’s Jigsaw were two of the earliest open source Java servlet containers.
+d) commercial :  WebLogic’s Tengah, ATG’s Dynamo, and LiveSoftware’s JRun.
+e) In 1997,Sun released Java Servlet Development Kit (JSDK),that support JSP and have HTTP 1.0
+f) after adoption by ASF,it become more popular with 3.0
++++++++++++++++++++++++++++++++++++++++++
+Configuring Tomcat :
+
+* it can run standalone or with a web server to serve static pages.
+* the combination with web server,makes response time bit slower.
+
+Relocating the Web Applications Directory : 
+* During normal usage of Tomcat, the server reads configuration from the conf and webapps directories and writes files to the logs, temp, and work directories.
+
+* Can have multiple instance of Tomcat on same server,just copy the setup to new dir
+  server.xml : "Server port" and "Connector port"
+     
+* To change the default listening port : 
+  server.xml :  change "Connector port"
+
+* Relaying Port 80 TCP Connections to Port 8080  
+ iptables -t nat -L  // checking the DNAT.
+#iptables -t nat -I PREROUTING -p tcp --dport 80 -j REDIRECT --to-ports 8080
+#iptables -t nat -I OUTPUT -p tcp --dport 80 -j REDIRECT --to-ports 8080 
+
+forwarding for only one IP : 
+# iptables -t nat -I PREROUTING -p tcp --dst 192.168.1.100 --dport 80 -j REDIRECT --to-ports 8080
+# iptables -t nat -I OUTPUT -p tcp --dst 192.168.1.100 --dport 80 -j REDIRECT --toports 8080
+
+Issue in port Relay :
+a) tomcat may redirect the request to http://www.example.com/ into 
+                                      http://www.example.com:8080/index.html
+									  
+b) to avoid this :   <Connector port="8080" protocol="HTTP/1.1" proxyPort="80"  in server.xml
+
+++++++++++++++++++++++
+Java VM configuration options ::: 
+
+Memory Setting :  -Xms384M         // Sets the heap memory size at JVM startup time.
+Memory Setting :  -Xmx384M         // Sets the maximum heap memory size the JVM can expand to.
+Debugging Security : -Djava.security.debug=all    //Turns on all debug output for security
+Debugging     : -verbose:class       // Enables verbose class loading debug output.
+Debugging     : -enableassertions    // Enables assertion checking,for programmers to check there code.
+Debugging     : -verbose:gc         // Enables verbose garbage collection debug output.
+Graphical     : -Djava.awt.headless=true  // Allows the JVM to run without any graphical display software installed.
+Localization  : -Duser.language=en  // Sets the language bundle that Tomcat uses.
+Localization  : -Dfile.encoding=UTF-8   // Sets the default file encoding that Tomcat uses.
+
+Heap Setting is very critical :
+a) Less Heap  : tomcat will run too slow.
+                may fail with OutOfMemory Error.
+b) More Heap  : use more memory than it needs,starving other process.take more time for Full GC to happen.
+c) Small "Starting heap memory size" and a larger "Maximum heap memory size"  : page response time will suffer ,
+                 as JVM need to be expand,consuming CPU and halting web operations for a while.
+              to avoid resizing we can set MIN=MAX.
+d) JVM setting can be done ,using JAVA_OPTS environment variable.
+  JAVA_OPTS="-Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n"			  
+  //tomcat jvm in debug mode,so a remote debugger can attach to it.
+ // JPDA remote debugger client can connect at 8000 port and debug any code that runs in Tomcat JVM.
+
+e) JAVA_OPTS="-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.ssl=false \
+   -Dcom.sun.management.jmxremote.authenticate=false"
+//Allows JMX console to connect,on the same machine
+
+JAVA_OPTS="-Dcom.sun.management.jmxremote.port=8008 -Dcom.sun.management.jmxremote.ssl=false \
+-Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.password.file=/path/to/pw/file"
+
+//here JMX is remote client to connect to Tomcat Server.
+
+f) On non graphical OS: use JAVA_OPTS="-Djava.awt.headless=true" 
+   to avoid any exception when "software you include in your webapps that might try to initialize any graphical code
+                                in the Tomcat JVM ".
++++++++++++++++++++++++++
+				
+Changing the JSP Compiler :::
+
+* Tomcat 5.5 and higher compiles JSP pages using in built "Eclipse JDT Compiler".
+* The JDT compiler is written in pure Java and performs the same job for Tomcat as the JDK’s javac command.
+* It's a new compiler and sometimes may not be as robust/mature as "javac".(some JAVA 1.5/1.6 language features are not implemented by it)
+* Tomcat runs on top of a JRE or FULL JDK.
+* Tomcat own JDT compiler,thus won't need "javac" until it find something which can't be compiled with native.
+* before 5.0 and older tomcat,there was no default compiler.
+
+Configuring Apache's Ant to compile JSP : (steps for 5.5)
+* Ant default compiler is JDK's "javac" compiler.
+1> remove Tomcat’s CATALINA_HOME/common/lib/jasper-compiler-jdt.jar file to remove it from default "Class loader".
+2> Install apache's "ant.jar"  in CATALINA_HOME/common/lib
+3> copy the JDK’s tools.jar file to the common class loader i.e  "CATALINA_HOME/common/lib/"
+4> now when tomcat starts it will use Ant’s compiler, which is javac by default instead of JDT Java compiler.
+
+Advantage : now one can configure CATALINA_HOME/conf/web.xml which is understood by JDK.
+
++++++++++++++++++++++++++
+
+Managing Realms, Roles, and Users :::
+
+* Security of Web Application Resources can be done through Container or Web Application Itself.
+* J2EE calls it : container-managed security
+                  application-managed security.
+				  
+* Users, Passwords and Roles are managed in groupings called "Realms".
+* Web Application can declare  themselves in web.xml 
+"Deployment Descriptor" : 	" which resources are accessible by which groups of users"	  
+   
+* Tomcat contains a pluggable framework for realms : UserDatabaseRealm, JDBCRealm, JNDIRealm, and JAASRealm.
+* Developers can create more realms.
+* To specify which realm should be used, insert a Realm element into your server.xml file.
+
+<Realm className="some.realm.implementation.className" \    //classname specifies the realm used.
+customAttribute1="some custom value"
+customAttribute2="some other custom value"/>
+
+++++++
+UserDatabaseRealm : loaded into memory from a static file, and kept in memory until Tomcat is shut down.
+                     $CATALINA_HOME/conf/tomcat-users.xml
+					 It contains the list of Users who are allowed to access the Web Applications.
+	ROOT ELEMENT : tomcat-users      // <tomcat-users>
+	ELEMENTS     : user , role.
+	<role rolename="tomcat"/>       // 1 Attribute
+	<user username="tomcat" password="tomcat" roles="tomcat"/>   // 3 Attributes
+	<role rolename="tomcat"/>
+	
+	* ROLE : "grouping of users" for which web applications may define a set of capabilities.
+	example : "Manager Application" that is shipped with Tomcat [to enable/disable/remove other web applications.]
+	           to use this application,you have to create a "user" which belongs to role : "manager".
+
+++++++++
+JDBCRealm  : users, passwords, and roles are stored in that database.provides dynamic access to data no need to 
+             restart tomcat to reads it's conf.
+
+<!-- Set up a JDBC Real for JabaDot user database -->
+<Realm className="org.apache.catalina.realm.JDBCRealm"  // Java class name of this realm implementation
+driverName="org.postgresql.Driver"          // The Java class name of the JDBC driver
+connectionURL="jdbc:postgresql:jabadot"     // The database URL used to establish a JDBC connection.
+connectionName="system"                     // The database username used to establish a JDBC connection
+connectionPassword="something top secret"
+userTable="users"                          // The name of the table listing users and passwords.
+userCredCol="passwd"                       // The name of the column in the users table listing user’s passwords
+userRoleTable="controls"                  // The name of the table for mapping roles to users.
+roleNameCol="roles"                         // The name of the column in the roles table that has role names
+userNameCol="nick"/>			          // The name of the column in the users and roles tables listing usernames
+
++++++++++++++
+
+JNDIRealm  :  Tomcat to retrieve usernames, passwords, and roles from an LDAP directory.
+
+++++++++++++++
+
+JAASRealm  :  realm implementation that authenticates users via the Java Authentication and Authorization Service.
+              JAAS implements a version of the standard Pluggable Authentication Module (PAM) framework
++++++++++++++++++++++++++++++++++
+
+Container-Managed Security ::: Control how a user’s credentials are verified when a protected resource is accessed.
+                
+a) Basic Authentication :  When a web application uses basic authentication.
+   * (BASIC in the web.xml file’s auth-method element).
+   * Tomcat uses HTTP basic authentication to ask the web browser for a username and password whenever the browser requests a resource of that web application that is protected
+   * password travels in network in base64-encoded text.						   
+   
+   Example : A Club Membership Website,with 
+             members-only  subdirectory.
+			 
+<security-constraint>
+<web-resource-collection>
+<web-resource-name>Entire Application</web-resource-name>
+<url-pattern>/members/*</url-pattern>
+</web-resource-collection>
+<auth-constraint>
+<role-name>member</role-name>         <-- Name of Role -->
+</auth-constraint>
+</security-constraint>
+<!-- Define the Login Configuration for this Application -->
+<login-config>
+<auth-method>BASIC</auth-method>        <-- Basic authentication -->
+<realm-name>My Club Members-only Area</realm-name>
+</login-config>
+						   
+	
+b) Digest Authentication : 	
+  * Send password in strongly encoded form.
+  * Disadvantage : some HTTP clients do not support it  .
+  
+  STEP 1
+<security-constraint>
+<web-resource-collection>
+<web-resource-name>Entire Application </web-resource-name>
+<url-pattern>/members/*</url-pattern>
+</web-resource-collection>
+<auth-constraint>
+<role-name>member</role-name>
+</auth-constraint>
+</security-constraint>
+<login-config>
+<auth-method>DIGEST</auth-method>
+<realm-name>My Club Members-only Area</realm-name>
+</login-config>					   
+		
+  STEP 2		
+AND modify the Realm setting in your server.xml file to ensure that your passwords are stored in Encoded form
+<Realm className="org.apache.catalina.realm.UserDatabaseRealm"
+resourceName="UserDatabase" digest="MD5"/>
+						   
+   STEP 3  // should be done for all users
+jasonb$ cd $CATALINA_HOME
+jasonb$ bin/digest.sh -a MD5 password
+output  :: user's password:9a3729201fdd376c76ded01f986481b1   
+
+   STEP 4  // and last store it in "tomcat-users.xml"
+   <tomcat-users>
+<role rolename="tomcat"/>
+<role rolename="role1"/>
+<role rolename="member"/>
+<user username="jasonb"
+password="9a3729201fdd376c76ded01f986481b1"
+roles="member"/>
+</tomcat-users>
+						   
+c) Form Authentication :  Application displays a login page to client when he tries to access the restricted page.
+                          Achieved by : auth-method ===> FORM 
+						  
+						  One needs :  login page ,Error Page used in case of Authentication failure .
+
+
+<security-constraint>
+<web-resource-collection>
+<web-resource-name>Entire Application </web-resource-name>
+<url-pattern>/members/*</url-pattern>
+</web-resource-collection>
+<auth-constraint>
+<role-name>member</role-name>
+</auth-constraint>
+</security-constraint>
+						  
+<login-config>
+<auth-method>FORM</auth-method>          <-- FORM Authentication -->
+<realm-name>My Club Members-only Area</realm-name>
+<form-login-config>
+<form-login-page>/login.html</form-login-page>
+<form-error-page>/error.html</form-error-page>
+</form-login-config>
+</login-config>
+                        
+						   
+						   
+d) Client-Cert Authentication :: can be used only when content is shared over SSL.
+                                 It allows client to login without authentication.
+								 
++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+* After setting the REALM and method of Authentication,user can access the Resource/Pages.
+* tomcat offers "Single Sign In",which allows user to access all resources under same virtual host.
+
+<!-- SingleSignOn valve, share authentication between web applications
+Documentation at: /docs/config/valve.html -->
+<!--
+<Valve className="org.apache.catalina.authenticator.SingleSignOn" />
+-->
+
+However we have have to follow some compliance :
+* The valve must be configured and nested within the same Host element that the
+web applications (represented by Context elements) are nested within.
+* The Realm that contains the shared user information needs to either be configured
+at the level of the same Host or in an outer nesting.
+* The Realm cannot be overridden at the Context level.
+* The web applications that use single sign-on must use one of Tomcat’s built-in authenticators rather than a custom authenticator. The legal settings for auth-method are BASIC, DIGEST, FORM, and CLIENT-CERT.
+* The single sign-on valve requires the use of HTTP cookies.
+
+
+=====================================================================================
+
+Controlling Sessions : 
+
+* Session is a series of Interaction between a single HTTP client and Web Server.
+* Servlet container defines "HttpSession Object" to stores info of user.  
+* JSESSIONID for the cookie name that stores a user’s session ID.
+* Tomcat uses Pluggable Session Managers which deals with how SESSION to be handle.
+  <Manager className="some.manager.implementation.className"
+   customAttribute1="some custom value"
+   customAttribute2="some other custom value"/>
+   
+* All of the Control over session is vested in "Manager and Store objects" and web.xml at the context level.
+
++++++++++++++++++
+
+Session Persistence : 
+
+* It is storing of Session values in DISK,so in case of app server restart,it can have session values again.
+* To users it will be to "login again","they may loose the web page they were on ".
+* Session values can be stored in : Custom Files,RDBMS,LDAP Directory.
+
+StandardManager : The default Manager,stores the session in files (by its own code),does this only when 
+                  TOMCAT is gracefully shutdown else it won't able to save values.
+				  
+				  * $CATALINA_HOME/work/Catalina/<hostname>/<webapp-name>/SESSIONS.ser
+				  
+         	<Manager className="org.apache.catalina.session.StandardManager" 
+              maxInactiveInterval="7200"/>   <-- session expiration 2 hrs -->
+			  
+PersistentManager : Another Session Manager,which stores values in STORE (file/DB) even in case of SERVER CRASH.
+                  
+            <Manager className="org.apache.catalina.session.PersistentManager" saveOnRestart="true">
+               <Store className="org.apache.catalina.session.FileStore"
+			          directory="/home/jasonb/tomcat-sessions"   />   //tomcat user shld have r/w permission.
+            </Manager>				  
+				  
+	* saveOnRestart : save and reload session when  tomcat gracefully stopped and restarted.
+    * <session ID>.session
++++++++++++++++++++
+            //Using JDBCStore for storing sessions
+            <Manager className="org.apache.catalina.session.PersistentManager" saveOnRestart="true">
+<Store className="org.apache.catalina.session.JDBCStore" driverName="com.mysql.jdbc.Driver"
+connectionURL="jdbc:mysql://localhost:3306/mydb?user=jb;password=pw" sessionTable=session1 
+            checkInterval=60/>   // After 60sec JDBCStore background thread checks the expired session.
+            </Manager>	
+			
+
+            Also a Table must be there before tomcat starts where JDBCStore writes values :
+			
+			create table session1 (                 // default is tomcat$sessions
+              id varchar(64) not null primary key,  // stores the Session Id
+              data blob                             // stores all data
+              valid char(1) not null,               // stores validity of sessions
+              maxinactive int not null,             // stores the maximum inactive interval for sessions
+              lastaccess bigint not null            // stores the last accessed time for sessions
+            );
+            
+===============================================================
+
+Accessing JNDI and JDBC Resources  : 			
+
+++++++++++++++++++++++++++++++++++++++++++++++++				  
+* JNDI : Java Naming and Directory Interface                 
+* is basically an Interface for being able to get instances of internal/External resources with this API,you can access many types of data,objects, devices, files of naming and directory services,
+
+
+* The most common use case is to set up a database connection pool on a Java EE application server. Any application that's deployed on that server can gain access to the connections they need using the JNDI name "java:comp/env/FooBarPool" without having to know the details about the connection.
+
+jndiContext.lookup("java:comp/env/persistence/customerDB"); 
+                  component/environment
+Advantage :
+a) If you have a deployment sequence where Apps move from devl->integration->test->prod environments, 
+you can use the same JNDI name in each environment and hide the actual database being used. Applications don't have to change as they migrate between environments.
+b) You can minimize the number of folks who need to know the credentials for accessing a production database. Only the Java EE app server needs to know if you use JNDI.
+
+		                        JAVA APPLICATION
+                                JNDI API								
+					            Naming Manager
+								JNDI SPI
+				             LDAP/NIS/RMI/CORBA/DNS
++++++++++++++++++++++++++++++++++++++++++++
+a) Application Uses Database
+b) to provide DB independent description in web.xml
+c) DB details are mentioned in server.xml
+d) Here JNDI (Maps web.xml to server.xml) locate DB sources and other sources.
+e) when resources are accessed through JNDI are referred as " context ".
+
+how it is mentioned in web.xml : 
+<resource-ref>
+<description>
+The database DataSource for the Acme web application.
+</description>
+<res-ref-name>jdbc/JabaDotDB</res-ref-name>      // Resource string
+<res-type>javax.sql.DataSource</res-type>
+<res-auth>Container</res-auth>
+</resource-ref>
+ 							 
+			<context ....>
+             <!-- Configure a JDBC DataSource for the user database. -->
+             <Resource name="jdbc/JabaDotDB"
+                       type="javax.sql.DataSource"
+                       auth="Container"
+                       user="ian"
+					   password="top_secret_stuff"
+                       driverClassName="org.postgresql.Driver"
+                       url="jdbc:postgresql:jabadot"
+                       maxActive="8"
+                       maxIdle="4"/>
+            </context>			
+						   
+===========================================================================================
+
+Servlet Auto-Reloading  : 
+* Tomcat automatically reloads a servlet upon modification,useful for Debugging and TEST.
+* to implement this,tomcat need to check modification time on each servlet.
+* this consumes a lot of file system activity.
+* to turn off this feature :::
+   set reloadable attribute in context element
+   
+===========================================================================================
+
+Tomcat Example Application :
+we have set of JSP and servlet example in :  CATALINA_HOME/weabpps/
+and CATALINA_HOME/conf/Catalina/localhost contain directories to see what webapps are already present in fresh Inst.
+
+    * these default directories must be renamed and restart the tomcat.
+	
+==========================================
+
+The Tomcat Admin Webapp : 
+
+* Before version 6.0,tomcat shipped with Administration Webapp,which allows "inspection and modification of tomcat".
+* 
+	
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+                    Deploying Servlet and JSP Web Applications in Tomcat
+            
+			
+* A JSP or servlet based application can move from one servlet container to another and platform.
+* Tomcat config files refer WebApps as "context".
+* Server.xml have "Context" element which represent the webapp's configuration.
+* for each separate webapp there should be separate "Context" element or separate context XML fragment file.
+* Context XML fragment files in tomcat 5 and above requires to be placed in :
+CATALINA_HOME/conf/[EngineName]/[Hostname]/         :: directory tree
+Advantage : any changes,don't require restart of tomcat.
+
+* Deployment  : Installing and configuring the Webapp in tomcat for first time.
+* Redeployment : Already deployed the Webapp,then stop the tomcat and redeploy the files(,which are modified)
+* Reload : a file content got changed,which are detected by Tomcat,then it reloads it.
+                 
+___________________________
+
+Hosts : A host is an FQDN.
+* a Webapps shld be deployed under host.
+* server.xml contain localhost as the default Host.
+* all HTTP request will be mapped to localhost,irrespective of the incoming request Header.
+
+* website : groovywigs.com
+* all the webapp's content  reside under "ROOT"	directory.so it will become webapps/ROOT
+* unpackaged content
+
+STEP 1:
+//ADD lines above host element
+<Host name="groovywigs.com" appBase="webapps" unpackWARs="true" autoDeploy="true"
+xmlValidation="false" xmlNamespaceAware="false">
+<!-- Context elements for the groovywigs.com host go here. -->
+</Host>					   
+
+STEP 2 :
+optional else keep localhost if there are many hosts.
+<Engine name="Catalina" defaultHost="groovywigs.com">
+
+
+HOT Deployment : Deploying and Undeploying Webapps while tomcat is running.
+with the help of "autoDeploy=true"
+
+In case of Hot deployment,you won't need to deploy your webapp at startup time,as it deploys the webapp twice 
+a) at start up time
+b) Hot deployment
+to handle this :
+deployOnStartup="false"
+
+STEPS to set HOT deployment for webapps:
+1> create a context element nested under HOST element with autoDeploy=true.
+2> copy the war file into appBase,and tomcat will deploy it automatically.
+3> Create a context XML fragment file under CATALINA_HOME/conf/[EngineName]/[HostName]/
+   that points to war file or unpacked directory.
+   or, 
+   META-INF/context.xml file  will be read by tomcat,with deployXML="true" 
+   
+if you wont supply any context XML fragment file,tomcat will dynamically create it with the help of 
+CATALINA_HOME/conf/context.xml
+
+Advantage of HOT DEPLOYMENT using context XML fragment files
+1> any change in "context element and nested inside" will be noticed by tomcat,and redeploy the application.
+2> to undeploy just remove the xml under CATALINA_HOME/conf/[EngineName]/[HostName]/
+
+	Deploying an Unpackaged Webapp Directory :
+a) helps in diagnosing the problem
+b) one can check the modification time of files.
+c) can be modified in place.
+d) can see all the files,classes,jsp.
+
+
+++++++++++++++++++++++++++++++
+
+The Host Manager Webapp  :: Its being shipped with tomcat,to dynamically creates host,while tomcat is running.
+* but this adds to memory not in actual file
+* so one need to add in server.xml to maintain it across the restart.
+* Having the ability to add hosts dynamically without restarting Tomcat enables you to add new hosts and deploy webapps into them, while other webapps serving for other hosts continue to run.
+	
+Host-Manager : http://localhost:8080/host-manager/html
+to access this : admin role user is required.
+
+Admin Webapp manager : manager role user is required.
+						   
++++++++++++++++++++++++++++
+
+Layout of a Web Application ::
+
+* Tomcat provides specifications for JSP and Servlet.
+* These specification are provided by Sun.
+* Java EE is designed to let App Devloper to move there Application from one Compliant Application Server to another
+  without significant rewriting or revising.
+* To achieve this goal,Application are packaged in specific and portable ways.
+  such as EAR,WAR.
+  Java Servlet Specification defines WAR for this purpose.
+*  simple_webapp/    [ Webapp ROOT folder ]
+                 index.html
+                 index.jsp
+                 tomcat.gif
+                 WEB-INF/
+                          web.xml  ( Web App Deployment Descriptor,Configuration for Web-app,description of Webapp
+						                              and any additional customization
+						  classes/
+						          ServletX class ( Java class files,which are not in a jar file)
+								                   Servlets or class files used by servlet/JSP or part of code.
+						  lib/ 
+                          		lib1.jar  ( jar and zips of packages of classes )
+								
+								
+*  Also access to WEB-INF and META-INF directories are automatically protected from access by Browsers.
+
+______________
+
+Deploying Servlets and JavaServer Pages  :::					   
+
+* in general a URI mapps to Servlet.
+* Alternate Mapping can be done with the help of WEB-INF/web.xml
+Required :
+a) alternate Mapping
+b) pass any initialization parameter to servlet.
+c) specify loading order on startup.
+
+<servlet>
+<icon>
+<small-icon>/images/tomcat_tdg16x16.jpg</small-icon>
+</icon>
+<servlet-name>InitParams</servlet-name>
+<display-name>InitParams Demo Servlet</display-name>
+<description>
+A servlet that shows use of both servlet- and webapp-speicific init-params
+</description>
+<servlet-class>InitParams</servlet-class>
+<init-param>
+<param-name>myParm</param-name>
+<param-value>
+A param for the Servlet:
+Forescore and seven years ago...
+</param-value>
+</init-param>
+<load-on-startup>25</load-on-startup>
+</servlet>
+
+++++++++++++++++++
+
+Deploying an Unpacked Webapp Directory ::
+
+Three Ways to achieve this : 
+1> Add the context element in server.xml and restart the tomcat.
+2a> Context XML fragment file deployment : add file in CATALINA_HOME/conf/[EngineName]/[Hostname] directory tree
+2b> create it as your web application’s WEB-INF/context.xml file relative to root directory.
+
+Explaining Method 1 :  "Server.xml Context Deployment"
+
+* One WebApp one Context element.
+* this need to be nest under <host> element.
+* Usually, adding your Context inside the default Host works because by default the default host’s name is localhost, and any requests coming into your machine via Tomcat’s network server will (by default) be routed to the default host.
+* <Host name="localhost" appBase="webapps"
+unpackWARs="true" autoDeploy="false"          // this shld be explicitly mentioned to avoid duplicate deployment
+xmlValidation="false" xmlNamespaceAware="false">    // as they are by default set to true !!!
+
+<Context docBase="my-webapp" path="/my-webapp"/>  // this will be CATALINA_HOME/webapps/my-webapp
+
+</Host>
+
+* if webapp is found at that path,tomcat will deploy it
+    mount it on Web Server URI path : /my-webapp
+  ACCESS :  http://localhost:8080/my-webapp
+  
+  TO Access it via : http://localhost:8080
+1> there should be no file : CATALINA_HOME/conf/[EngineName]/[Hostname]/ROOT.xml
+2> <Host name="localhost" appBase="webapps"
+unpackWARs="true" autoDeploy="false"
+xmlValidation="false" xmlNamespaceAware="false">
+
+<Context docBase="my-webapp" path=""/> // it tells Tomcat to map your webapp to the root URI path
+
+</Host>
+
+3> initial letters of appBase and docBase should not match : gives error in deployment.
+
+_________________________
+Explaining Method 2 :	Context XML Fragment File Deployment					    
+
+* it contains only the context part of server.xml
+* path attribute can't be defined in this case.
+* Path can be :  CATALINA_HOME/conf/[EngineName]/[HostName]/my-webapp.xml
+			or,  webapps/META-INF/context.xml  directory,this name "context" is fixed
+ so a file containing context info :  my-webapp.xml
+                http://localhost:8080/my-webapp
+				
+*		TO Access it via : http://localhost:8080			
+a) CATALINA_HOME/conf/[EngineName]/[HostName]/ROOT.xml ;; and Tomcat will map the context to the root URI.
+and for second case :
+    webapp directory should be :::  ROOT
+	                                webapps/META-INF/context.xml
+									For Tomcat to read and use your META-INF/context.xml file, you must not set deployXML="false" on your Host.
+									
+===================================================
+
+Deploying a WAR File : 
+
+* WAR files are described in JAVA SERVLET SPECIFICATION.
+* with tomcat we have to decide : webapp should be unpacked or remain packed.
+* By Default,when tomcat deploys the WAR,it unpacks it with the [same name]-.war
+* packed archive can also serve by :
+unpackWARs="false" on your Host element in server.xml
+
+
+Deployment is in Same way :
+a) server.xml context deployment : in server.xml
+b) Context XML fragment file deployment.
+            CATALINA_HOME/conf/[EngineName]/[Hostname] directory tree
+			WEB-INF/context.xml file relative to the root directory of your web application.
+			
+			
+Explaining Method 1 :  "Server.xml Context Deployment"
+
+* <Host name="localhost" appBase="webapps"
+unpackWARs="true" autoDeploy="false"
+xmlValidation="false" xmlNamespaceAware="false">
+<Context docBase="my-webapp.war" path="/my-webapp"/>
+</Host>
+
+* REST SAME AS ABOVE
+
+Explaining Method 2 :	"Context XML Fragment File Deployment"
+
+* SAME AS ABOVE
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Working with WAR Files :: 
+
+1> jar cvf app.war  code_base/    // this creates the Web Archive.
+
++++++++++++++++++++++++++++++++++++
+
+The Manager Webapp :: the Web Interface to manage Web Applications.
+
+1> After setting the roles,after restart one can access the Maanager Web Application.
+   http://localhost:8080/manager/html
+   
+2> It generates list of " Application Deployed ".
+3> http://localhost:8080/manager/list  // list all the contexts with concurrent sessions and current status.
+
+
+USING MANAGER WEBAPPS ::
+
+let CodeBase is at  : /home/ian/webs/webapp1
+
+Context Path : "/webapp1"
+War or Directory URL :  "file:/home/ian/webs/webapp1"
+
+// then By clicking "Deploy" application got listed if all went successful.
+
+// CAUTION : if the Webapp is under appBase directory,then upon undeploying via Manager Application
+   will "REMOVE" the the xml fragment files and WebApp's file on disk.
+   
+Maanger Application also provide feature : " Complete Server Status"
+1>  it list all the Webapps and iterates through each of them - "showing every mapped resource"  
+2>  For each resource, it displays the processing
+time, maximum processing time, request count, error count, load time, and class loading time.	
+
+full listing is very handy :  To debug your deployment descriptor’s servlet mappings			   
+						   
++++++++++++++++++++++++++++++++
+
+Symbolic Links ::: 
+
+* due to security concern tomcat denies the use of soft link inside webapps.
+* this can be enabled on per-webapp basis.
+<Context path="/pets-r-us" docBase="pets-r-us" allowLinking="true">
+</Context>
+
+Make sure the OS user shld be able to access,permission,ownership of the links.
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+Tomcat Performance Tuning :::
+
+Load Testing : http://www.softwareqatest.com/qatweb1.html#LOAD
+
+1> Load Testing : requesting one or more resources from web server at certain no. of times
+                  and how long it took from client perspective.
+	ab,siege and Apache Jmeter
+	
+	ab: The Apache benchmark tool 
+a) ab -k -n 100000 -c 149 http://tomcathost:8080
+accessing URL 100000 times,with 149 maximum concurrency threads // set with accordance with maxthread for Connector
+ k--> Keep-Alive                                                   in server.xml file
+ 
+ 
+ Tomcat Connectors and Apache Httpd Connector Modules ::
+
+ 1> JIO (java.io) : Tomcat's Default HTTP connector,also Known as "Coyote"
+                    libtcnative is the library for this : it uses pure JAVA tcp sockets implementation.
+					
+			<!-- The stock HTTP JIO connector. -->
+<Connector port="8080" protocol="HTTP/1.1" maxThreads="150" connectionTimeout="20000"
+redirectPort="8443" />
+					
+ 2> APR (Apache Portable Runtime) : Tomcat's Default HTTP connector,if installed on Windows via NSIS installer.
+                     It is made up of C and java 
+					 It cannot run on all platform as java.io can as implemented in C
+			
+			<!-- The HTTP APR connector. -->
+<Connector port="8080" protocol="org.apache.coyote.http11.Http11AprProtocol"
+enableLookups="false" redirectPort="8443" connectionTimeout="20000"/>		 
+	[ Apache web server is also implemented in C and uses APR for Network Communications. ]
+
+ 3> NIO (java.nio) : Alternate Pure Java Connector Implementation offers "Non Blocking TCP Socket" features.
+                     
+	         In java.io if we set 400 threads to serve the concurrent request,then it creates all of them.
+			 while java.nio uses single thread to parse all incoming request then spwaning a thread which invokes the servlet.hence it requires less CPU and Memory.
+			 
+			 <!-- HTTP NIO connector. -->
+<Connector port="8080" maxThreads="150" connectionTimeout="20000" redirectPort="8443"
+protocol="org.apache.coyote.http11.Http11NioProtocol"/>
+			 
+	Apache httpd to Tomcat via an Apache httpd connector module ::
+// These all are under Proxy module because request is being served from third party in a transparent manner.
+ 
+ 4> mod_jk  :: The AJP protocol is a TCP packet-based binary protocol which relays the essentials of HTTP requests to another server software instance significantly faster than HTTP itself.this is because HTTP is plain text based,which involves more complex parsing at server end.while in case of Binary protocol the strings are already parsed results in faster response and lesser network overhead.
+ 
+ 5> mod_proxy_ajp :: This is mod_proxy’s AJP protocol connector support module,communication between 
+                     Apache and Tomcat is done via TCP/AJP Protocol.connects to "Tomcat’s AJP Server Port"
+					 it comes by default in HTTPD 2.2,this module is derivative of mod_jk.
+					 
+ 6> mod_proxy_http :: This is mod_proxy’s HTTP protocol connector support module.
+                      Apache and Tomcat is done via TCP/AJP Protocol.connects to "Tomcat’s HTTP (web) Server Port"
+					  All communication between Apache httpd and Tomcat is done via "HTTP when using this module".
+					  it comes by default in httpd.
+					  
+Some Facts ::
+a) Serving Tomcat’s resources through Apache httpd was very slow compared to serving them directly from Tomcat,
+b) Tomcat standalone JIO is fastest to serve static resources.
+c) Apache HTTPD built to use worker MPM is faster than it's prefork MPM model.
+d) AJP outperformed HTTP when using mod_proxy.
+
++++++++++++++++++++++++++
+1> JVM Tuning :: For your web-app you must benchmark with each available JVM brand.
+              Sun’s 1.6 versus IBM’s 1.6 versus BEA’s 1.6
+* It is likely true that newer JVMs have both better performance and less stability.
+* which version is best :
+  version which was stable before Latest stable release in terms of major no.
+  example : latest stable is 1.7
+                    previous : 1.6.29 // Ideal one.
+* during Heap resizing application stops for a while which increases the latency.
+so minimum heap size and the maximum heap size to be the same.
+* Apart from Heap all the default setting are the fastest one.
+
+
+2> Disabling DNS Lookups :: 
+* during logging about the client,it can either log the client IP or resolve it to actual host name via DNS.
+* resolving hostname via DNS will incur network latency,RTT from multiple servers,may be far or inoperative.
+
+<Connector port="8080" maxHttpHeaderSize="8192" maxThreads="150" minSpareThreads="25" maxSpareThreads="75"
+enableLookups="false" redirectPort="8443" acceptCount="100" connectionTimeout="20000" disableUploadTimeout="true" />
+
+3> Adjusting the Number of Threads ::
+  Min and Max threads should be properly adjusted.
+
+4> Speeding Up JSPs :: 
+* When a JSP is first accessed, it is converted into "Java Servlet source Code", which must then be compiled into Java bytecode.  
+* JSP Source --> JAVA Source/Servlet --> Compile --> Run
+* JAVA Server Specification specifies the Container to allow pre compilation of defined JSP Pages while on startup.
+
+WEB.XML
+<web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
+
+<servlet>
+<servlet-name>index.jsp</servlet-name>
+<jsp-file>/index.jsp</jsp-file>    // this compel it to be precompile on startup
+<load-on-startup>0</load-on-startup> // lower the positive integer no,earlier it will be precompiled.
+</servlet>
+
+</web-app>
+
+					  
+//now the first request to index.jsp will be mapped to precompiled servlet class file of the JSP.
+also we can have precompiled JSP using tools before getting it deployed on server.
+
+Advantage 1
+* build time compiled JSP runs faster than compiled inside the tomcat.
+* Java class bytecodes generated in both situations should really be the same.
+* Although the time it takes for the first request is very small for converting JSP to JAVA Servlets.
+* All further request will be served by the "Compiled and loaded JSP Servlet Class".
+* All JSP which are compiled before runtime runs faster than the JSP which got compiled at run-time.
+ a) as they got mapped to the URI space in the web.xml file.
+ b) the jsp compiled at run time must be mapped by regular URI Mapper,which sends the request to JspServlet then the request is mapped to the requested JSP page by Tomcat’s JspServlet.
+ 
+Advantage 2
+* In pre compiled JSP,Syntax is checked at compile time,so avoiding errors on server
+
+Adavantage 3
+* Saving time,if no of files are high in no.
+
+Advantage 4
+* selling the code to customer,only by giving them the precompiled code. "JSP Servlets".
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+    
+	                           Integration with the Apache Web Server
+							   
+Pros and Cons of Integration :
+
+a) tomcat have lesser web server's feature as compared to httpd.
+b) ease of migration,just copy the files and run tomcat on any machine/OS.
+c) less software packages available to work with tomcat.
+d) Tomcat has fewer web server-specific features,having so many modules,PHP
+e) httpd startup time is much smaller than tomcat.
+f) Apache httpd is more susceptible to buffer overflow exploit attacks.
+
+Forward Proxy : An ordinary forward proxy is an intermediate server that sits between the client and the origin server. In order to get content from the origin server, the client sends a request to the proxy naming the origin server as the target and the proxy then requests the content from the origin server and returns it to the client. The client must be specially configured to use the forward proxy to access other sites.
+
+Reverse Proxy : A reverse proxy, by contrast, appears to the client just like an ordinary web server. No special configuration on the client is necessary. The client makes ordinary requests for content in the name-space of the reverse proxy. The reverse proxy then decides where to send those requests, and returns the content as if it was itself the origin.
+
+    
+	Configuring HTTP with Mod-proxy ::
+1> Step 1	
+LoadModule proxy_module modules/mod_proxy.so
+LoadModule proxy_http_module modules/mod_proxy_http.so
+LoadModule proxy_ajp_module modules/mod_proxy_ajp.so
+    
+2> ./configure --prefix=/opt/httpd --enable-proxy --enable-proxy-http --enable-proxy-ajp
+make && make install
+
+3> add lines in httpd.conf
+ProxyPass /loch-ness http://tomcathost:8080/loch-ness
+ProxyPassReverse /loch-ness http://tomcathost:8080/loch-ness
+ProxyVia On
+
+4> cd to proxy directory
+apxs -i -a -n proxy -c *.c
+  
+5>  can add also these lines ::
+ProxyPass /loch-ness ajp://tomcathost:8009/loch-ness
+ProxyPassReverse /loch-ness ajp://tomcathost:8009/loch-ness
+ProxyVia On					 
+					 
+6> Setting Up Tomcat
+<!-- Define a Proxied HTTP/1.1 Connector on port 8080 -->
+<Connector port="8080" protocol="HTTP/1.1" maxThreads="150" connectionTimeout="20000"
+proxyName="www.example.com" proxyPort="80" redirectPort="443" disableUploadTimeout="false"/>
+
+proxyName : is optional but, if present, determines what the user sees in output from servlets/JSPs that display the server’s hostname.
+
+
+Using the mod_jk Connector ::
+
+* mod_jk is the slowest connector we used to connect Apache httpd with Tomcat.
+* mod_jk must be compiled to get used with httpd and with matched version no. of HTPPD.
+# cd tomcat-connectors-1.2.40-src/native
+# ./configure --with-apxs=/usr/sbin/apxs
+# make
+# make install
+
+# Load mod_jk module
+LoadModule jk_module /usr/lib64/httpd/modules/mod_jk.so
+# Where to find workers.properties
+JkWorkersFile /etc/httpd/conf/workers.properties
+# Where to put jk logs
+JkLogFile /var/log/httpd/mod_jk.log
+# Set the jk log level [debug/error/info]
+JkLogLevel info
+# Select the log format
+JkLogStampFormat "[%a %b %d %H:%M:%S %Y] "
+# JkOptions indicate to send SSL KEY SIZE,
+JkOptions +ForwardKeySize +ForwardURICompat -ForwardDirectories
+# JkRequestLogFormat set the request format
+JkRequestLogFormat "%w %V %T"
+# Send servlet for context /docs to worker named tomcat1
+JkMount /tomcat-docs tomcat1
+JkMount /tomcat-docs/* tomcat1	
+
+/etc/httpd/conf/workers.properties
+
+worker.list=tomcat1
+worker.tomcat1.type=ajp13
+worker.tomcat1.host=localhost
+worker.tomcat1.port=8009
+# worker "tomcat1" uses up to 150 sockets, which will stay no more than
+# 10 minutes in the connection pool.
+worker.tomcat1.connection_pool_size=150
+worker.tomcat1.connection_pool_timeout=600
+# worker "tomcat1" will ask the operating system to send a KEEP-ALIVE
+# signal on the connection.
+worker.tomcat1.socket_keepalive=1
+# mount can be used as an alternative to the JkMount directive
+#worker.tomcat1.mount=/docs /docs/*
+
+Starting up the Integrated Servers :
+a) start first the Tomcat
+b) then  Apache Httpd
+c) 
+
+															   
+Tomcat Clustering 
+
+Cause to use clustering 
+* A single server cannot handle the high number of incoming requests efficiently 
+* A stateful application needs a way of preserving session data if its server fails 
+* A developer requires the capability to make configuration changes or deploy updates to their applications without discontinuing service. 
+
+
+Environment :
+
+Apache HTTPD with mod_jk (for load balancing) 
+2 Tomcat 6.x instances 
+in-memory session replication (via Tomcat's built in functionality)  
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+						   
+						   
+						   
+						   
+++++++++++++++++++++++++++++++++++++
+configuring via source
+wget http://apache.mirrors.spacedump.net//tomcat/tomcat-connectors/jk/tomcat-connectors-1.2.37-src.tar.gz
+yum install apr-util-devel httpd-devel
+tar -xzf tomcat-connectors-1.2.37-src.tar.gz
+cd tomcat-connectors-1.2.37-src
+cd native/
+yum install autoconf
+yum install libtool
+./buildconf.sh
+./configure --with-apxs=/usr/sbin/apxs
+or
+./configure CFLAGS='-arch x86_64' APXSLDFLAGS='-arch x86_64'  -with-apxs=/usr/sbin/apxs	
++++++++++++++++++++++++++++++++++++++++++++++++++++							
+# cd tomcat-connectors-1.2.20-src/native
+# CFLAGS="-O3 -falign-functions=0 -march=athlon64 -mfpmath=sse -mmmx -msse -msse2 -
+msse3 -m3dnow -mtune=athlon64" ./configure --with-apxs=/opt/httpd/bin/apxs
+# make && make install

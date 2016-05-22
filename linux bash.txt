@@ -1,0 +1,73 @@
+                             Linux BASH Etiquettes
+                           ----------------------------
+Meta character : |, &, ;, (, ), <, >, space, tab
+control operator : ||, &, &&, ;, ;;, (, ), |, <newline>
+RESERVED WORDS  :  ! case do done elif else esac fi for function if in select then until while { }
+
+1> PIPELINE
+a|b|c
+a) first a then b then c
+b) each program/command is executed in a separate shell,so variable of one can not be used by other one
+c) after execution of each command ,shell returns the status of combo.
+
+2> The return value of a simple command is its exit status, or 128+n if the command is terminated by signal n.
+
+3> <command> &  //background process in subshell and does not wait for it's output and return status is 0.
+
+4> <command>;<command>  are executed sequentially,return status is of the last command.
+
+5> <command1> && <command2>  // c2 is executed only if c1 is true
+
+6> <command1> || <command2>  // c2 is executed only if c1 is false
+
+7> (a=5)  // is executed in subshell						   
+							 
+8> Quoting : To treat special/meta character as normal.
+
+the escape character, single quotes, and double quotes    :  \ , ' , "
+
+escape character : escapes all except \n
+
+9> suspended jobs get killed after we exit from the shell.
+
+10> . or source executes the script in the current shell.
+
+11> PIPESTATUS a shell array to hold the exit status of each segment 
+   cat /etc/passwd | grep google | grep vijay
+   here we will have $PIPESTATUS[0] 
+                     $PIPESTATUS[1]
+					 $PIPESTATUS[2]
+					 
+					 
+					 
+					  nc -v -n -w 1 213.153.99.238 -z 18000 || (echo Fail; export DFGWBUP=`netstat -rn | grep 213.153.99 | tail -1 | awk '{print $2}'`; export DFGWIF=`netstat -rn | grep 213.153.99 | tail -1 | awk '{print $8}'`; echo "213.153.99.238 via ${DFGWBUP} dev ${DFGWIF}" >> /etc/sysconfig/network-scripts/route-${DFGWIF}; cat /etc/sysconfig/network-scripts/route-${DFGWIF}; route add -host 213.153.99.238 gw ${DFGWBUP}; netstat -rn | grep 213.153.99.238 )
+
+ 
+ rsync -rave ssh 884* litmsj938v.sj.se:/var/lib/pgsql/9.0/data/base/16784/
+
+
+12>  basename   : removes the dir path
+                  basename /root/a.sh   // a.sh
+				  
+13>  bc     : Calculator 
+              bc <<< 5+4     //9 
+			  echo "5*4" | bc  //9
+			  echo "var=5;++var" | bc  // 6
+			  echo "1 == 2" | bc   // 0
+			  x=`echo "5-4" | bc`
+			  echo $x  \\ 1
+			  echo "scale=1;sqrt(10)" | bc  // 3.1
+			  
+14> comman substitution :    $(command-name)  or `command-name`
+15>  false   // returns status false
+16>  true    // returns status true
+17>  sleep amount  // Wait a specified amount of time before executing another command
+18>  0 stdin,
+     1 stdout,
+	 2 stderr                           
+	 
+19> echo $PS1
+    set it like this :: PS1="[\u@\u \W]\$"
+	and put it into /etc/profile
+							 
+							 

@@ -1,0 +1,270 @@
+                               
+							             LINUX TOOLS
+										 
+1> sar  :  System Activity Reporter
+          * provided by sysstat package : cifsiostat,iostat,mpstat,pidstat,sar
+          * It can be used for realtime monitoring of Linux system performance.
+		  * service sysstat start     // to start the sysstat
+		   
+     * it collects data via cron : /etc/cron.d/sysstat
+	 /usr/lib64/sa/sa1    // collects data in regular interval.
+	                       * it internally calls "sadc utility" to collect system stats and store it in a binary file 
+						   * default log directory : /var/log/sa/
+						   * -I -d 1 1 // reports  all disk instance.
+						               // and the -I option force report statistics for all system interrupts
+						   * -S DISK 1 1
+
+	 /usr/lib64/sa/sa2    // generate a daily summary "sar[dd]" from the log produced by sa1 cron in /var/log/sa/sar
+	                         and removes the old logs as mentioned by /etc/sysconfig/sysstat
+							 it gives two parameters :
+							 HISTORY : how much old log should be there.
+							 COMPRESSAFTER : it compress logs after n no. of days.
+							 
+		
+          SAR command line Usage		
+	a) sar -u 2 5  // produces cpu usage of whole day,5 times with interval 2 sec.
+	CPU     %user     %nice   %system   %iowait    %steal     %idle
+	
+	b) sar -d  // produces disk usage.
+	 
+	 DEV       tps  rd_sec/s  wr_sec/s  avgrq-sz  avgqu-sz     await     svctm     %util
+ dev11-0      0.00      0.00      0.00      0.00      0.00      0.00      0.00      0.00
+  dev8-0      0.35      0.00      6.19     17.59      0.00      6.07      2.42      0.09
+  
+    * DEV : denotes the device name on machine.can be identified by Major-no and minor no. in /dev
+	* tps : transfer per second, so it shows the transfer per second to that particular device.
+	* rd_sec/s : total no. of sector which is being read.
+	* wr_sec/s : no of sector written per second.
+	* await : total number of time,in ms that the processor waited for requests regarding I/O.
+	* svctm : The average service time (in milliseconds) for I/O requests that were issued to the device.
+	* %util : usage of cpu in percentage when the request was generated.Device saturation occurs when this value is close to 100%.
+	
+	c) sar -r  // produces memory usage
+	
+	kbmemfree kbmemused  %memused kbbuffers  kbcached  kbcommit   %commit
+	1730916    316408     15.45     21400    111060    306872      5.00
+	
+	kbmemfree :  amount of free memory.
+	Kbmemused :  memory used.
+	%memused  :  usage in percentage.
+	kbbuffers :  buffer memory used by kernel.
+	kbcached  :  cached memory used by the kernel.
+	kbcommit  :  wrote to disk,from RAM.
+
+	["DEV, EDEV , NFS, NFSD, SOCK, IP, EIP, ICMP, EICMP, TCP, ETCP, UDP, SOCK6, IP6, EIP6, ICMP6, EICMP6 and UDP6"]
+    http://linux.die.net/man/1/sar
+	
+	d) sar -n DEV    // shows "n" network statistics.,per second	
+	rxpck/s : this shows the total packets received per second.
+    txpck/s : transmitted packets per second.
+    rxcmp/s : compressed packets received.
+    txcmp/s : compressed packets transmitted.
+    rxmcst/s: packets multicasted per second.
+	
+	e) sar -n EDEV    // "statistics on failures (errors) from the network devices are reported."
+	rxerr/s : Total number of bad packets received per second.
+    txerr/s : Total number of errors that happened per second while transmitting packets.
+     coll/s : Number of collisions that happened per second while transmitting packets.
+   rxdrop/s : Number of received packets dropped per second because of a lack of space in linux buffers.
+   txdrop/s : Number of transmitted packets dropped per second because of a lack of space in linux buffers.
+   txcarr/s : Number of carrier-errors that happened per second while transmitting packets.
+   rxfram/s : Number of frame alignment errors that happened per second on received packets.
+   rxfifo/s : Number of FIFO overrun errors that happened per second on received packets.
+   txfifo/s : Number of FIFO overrun errors that happened per second on transmitted packets.
+	
+	f) sar -n NFS 1 5  // statistics about NFS client activity are reported
+	call/s : Number of RPC requests made per second.
+ retrans/s : Number of RPC requests per second, those which needed to be retransmitted (example: server timeout).
+    read/s : Number of 'read' RPC calls made per second.
+   write/s : Number of 'write' RPC calls made per second.
+  access/s : Number of 'access' RPC calls made per second.
+  getatt/s : Number of 'getattr' RPC calls made per second.
+  
+    g)  sar -n NFSD 1 5  // statistics about NFS server activity are reported.
+	scall/s : Number of RPC requests received per second.
+  badcall/s : Number of bad RPC requests received per second, those whose processing generated an error.
+   packet/s : Number of network packets received per second.
+      udp/s : Number of UDP packets received per second.
+      tcp/s : Number of TCP packets received per second.
+      hit/s : Number of reply cache hits per second.
+     miss/s : Number of reply cache misses per second.
+    sread/s : Number of 'read' RPC calls received per second.
+  swrite/s  : Number of 'write' RPC calls received per second.
+  saccess/s : Number of 'access' RPC calls received per second.
+  sgetatt/s : Number of 'getattr' RPC calls received per second.
+  
+	h) sar  -n SOCK     // produces total socket 
+	  totsck : Total number of sockets used by the system.
+      tcpsck : Number of TCP sockets currently in use.
+      udpsck : Number of UDP sockets currently in use.
+      rawsck : Number of RAW sockets currently in use.
+     ip-frag : Number of IP fragments currently in use.
+      tcp-tw : Number of TCP sockets in TIME_WAIT state.
+	
+	i) sar -q 2 4     // load Avg report
+	runq-sz  : Run queue length (number of processes waiting for run time).
+    plist-sz : Number of processes and threads in the process list
+     ldavg-1 : System load average for the last minute
+     ldavg-5 : System load average for the past 5 minutes
+    ldavg-15 : System load average for the past 15 minutes
+	
+	j) sar -u 1 3 -o test.txt    // outputs a binary file,which can be seen using ,sar -f 
+	k) sar -B 3 10       // Paging activity on server.
+	
+	pgpgin/s pgpgout/s   fault/s  majflt/s  pgfree/s pgscank/s pgscand/s pgsteal/s    %vmeff
+	   0.00     23.53    123.22      0.00    202.48      0.00      0.00      0.00      0.00
+	   
+	l) sar -w 3 10  // to see process creation and context switching activity.
+	proc/s   cswch/s
+	
+	m) sar -f /var/log/sa/sa27   // fetches metric of specific day.
+    n) sar -r -f /var/log/sa/sa27 -s 02:20:00 -e 03:20:00	// getting info of specific interval.
+	o) sar -f /var/log/sa/sa27 -s 02:20:00 -e 03:20:00 -A   // ALL the metrics collected by SAR.
+	 	
+	
+++++++++++++++++++++++++++++++++++	
+	Collect Graphical reports using ksar :  "kSar which is a java application that graph your sar data"
+	* LC_ALL=C sar -A -f /var/log/sa/sa07 > /tmp/disk07
+	
+	http://linux.die.net/man/1/sar
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++		
+2> iostat : generates three types of reports,
+            CPU Utilization report
+ 		    Device Utilization report 
+			Network Filesystem report.
+
+			"MAN : http://linux.die.net/man/1/iostat"
+
+CPU Utilization Report : %user   %nice %system %iowait  %steal   %idle  %util
+Device :  tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn 
+tps : no. I/O request to the device.
+%util let us know which disk is heavily used
+  iostat <option> 1 5  : in every 1 sec and 5 times
+* iostat -c : Display the CPU utilization report.
+* iostat -d : Display the device utilization report.
+* iostat -h : Make the NFS report displayed by option -n easier to read by a human.
+* iostat -k : Display statistics in kilobytes per second instead of blocks per second. 
+* iostat -m : Display statistics in megabytes per second instead of blocks or kilobytes per second. 
+* iostat -N : To display the LVM statistics 
+* iostat -n : Display the network filesystem (NFS) report. This option works only with kernel 2.6.17 and later.
+* iostat -p [sda] [sdb] | ALL  : displays statistics for block devices and all their partitions
+* iostat -x : Display extended statistics. 
+* iostat -z : omit output for any devices for which there was no activity during the sample period.
+
+3> Mpstat : Display all CPU  stats :
+* mpstat -P ALL  : displays all the individual CPUs (or Cores) along with its statistics
+
+
+4> IPTraf : text based utility to monitor the live traffic.
+            can see packet sent/received for each Protocol and on every interface.
+			Packet Size Statistical Breakdown
+			TCP/UDP Statistical Breakdown
+
+5> iftop : It displays per host bandwidth usage
+           View traffic to and from a specific network of your interest
+		   
+		   a)  a ==>  b    // traffic sent by a to b
+		     <==         // vice versa.
+		   b)  last three columns you see is the output for bandwidth usage in the last 2,10 and 40 seconds.
+		   c) iftop -i eth1  // default shows result from eth0.
+		   d) iftop -n  // suppress hostname resolution.
+		   e) iftop to display source and destination port with "SHIFT + s" and "SHIFT + d" interactively.
+		   f) last row of the iftop output shown the received and transmitted traffic(RX and TX) for 2,10,and 40 seconds, with the grand total of the both.
+		   
+5> ntop  : a network traffic monitor that displays the network usage.
+           ntop can consume a lot of memory, so if there is no need to run it constantly
+           ntop : will initialize ntop and it will ask you to enter your username and password.
+		   The default username: admin
+                       Password: yourEnteredpassword
+		    * service ntop start
+            * http://ServerIP:3000
+            * https://ServerIP:3001			
+		   
+6> htop : shows top in more interactive way
+
+7> iotop : show disk i/o interactively.DISK READ and DISK WRITE are the block I/O bandwidth used during the sampling period. SWAPIN and IO are the percentages of time the thread spent respectively while swapping in and waiting on I/O more generally. PRIO is the I/O priority at which the thread is running.
+          * iotop -o  // only show processes or threads actually doing I/O
+          * iotop -p PID // processes/threads to monitor
+          * iotop -u USER 
+		  
+8> mtr  : "My TraceRoute",combines functionality of ping and traceroute,
+           it constantly poll a remote server and see how the latency and performance changes over time.
+		   allows you to see how the network performance varies over time.
+           
+		   the route taken between two points on the Internet can vary a great deal based on location and the routers that are located upstream of you. For this reason it is often recommended that you collect MTR reports in both directions for all hosts that are experiencing connectivity issues,
+		   
+		   This is because, from time to time, MTR reports will not point to errors from one direction when there is still packet loss from the opposite direction. Having both reports is helpful as it can aid in the identification of issues and will be needed if a problem must be reported.
+		   When different amounts of loss are reported, always trust the reports from later hops.
+		   
+          * mtr <domain_name>  // runs interactively.
+		  * mtr --report -c 30 <domain>  //checks for 30 times and exit.,default is 10.
+		  * Verify Packet Loss : There is a common practice among the service provides to “Rate Limit” the ICMP traffic. This can provide an illusion of packet loss, when in fact there is no loss. To verify whether the loss is real or due to rate limiting, check the “Loss%” of the next hop. If it shows 0.0%, then you can be sure that the “Loss%” reported is due to the ICMP rate limiting and not actual loss.
+		  
+		  If the loss continues for more than 1 hop, then it is possible that there is some packet loss. Also note that Rate limiting and Packet Loss can happen concurrently. In that case take the lowest Loss% in a sequence as actual loss.
+		  
+Lost% – Shows the % of packets loss at each hop.
+Snt – Shows the no:of:packets being sent.
+Last – Latency of the last packet being sent.
+Avg – Average latency of all packets.
+Best – Displays the best Round Trip Time for a packet to this host (shortest RTT).
+Wrst – Displays the worst Round Trip Time for a packet to this host (longest RTT).
+StDev – Provides the standard deviation of the latencies to each host.
+          		  
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+2> pidstat : to monitor processes and threads currently being managed by the Linux kernel,
+             also monitors it's children of those process and threads.
+			 * pidstat -d -p 3152 1 3  // reports the I/O stats with the pid/name of process whose value varies.
+			 * pidstat -u -p 3245    // reports cpu utilization.
+			 * pidstat -t -p 8197 1 3  // stat for pid with all it's threads.
+			 * pidstat -r 2  // memory usage and page faults.
+			  PID  minflt/s  majflt/s     VSZ    RSS   %MEM  Command
+			  Memory Leak :  RSS and VSZ.
+			 * pidstat -d 2 <pid> // list what process is doing in every 2 sec 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+3> list of all waiting process :
+
+for x in `seq 1 1 10`; do ps -eo state,pid,cmd | grep "^D"; echo "----"; sleep 5; done
+
+PROCESS STATE CODES
+ D uninterruptible sleep (usually IO)
+ R running or runnable (on run queue)
+ S interruptible sleep (waiting for an event to complete)
+ T stopped, either by a job control signal or because it is being traced.
+ W paging (not valid since the 2.6.xx kernel)
+ X dead (should never be seen)
+ Z defunct ("zombie") process, terminated but not reaped by its parent.	
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Xming Usage :
+
+1> download xming and xming font server
+2> Open putty :
+enable X11 forwarding and  X dispaly location : localhost:0.0
+click on session and save
+
+Note : To connect from local machine to remote server we need to export the display.
+a) get the ip address , ipconfig
+b) export DISPLAY=localhost:0.0
+
+now when u login via user(non-root),it will copy file in login directory (.Xauthority),copy same to root
+[e600624@ilp-met-mon03 ~]$ xauth list
+ilp-met-mon03/unix:10  MIT-MAGIC-COOKIE-1  654f19c4402f08944512da2ea041b4a6
+[e600624@ilp-met-mon03 ~]$
+[e600624@ilp-met-mon03 ~]$ sudo su - root
+Last login: Wed Jan 27 18:57:24 CET 2016 on pts/0
+# xauth add ilp-met-mon03/unix:10  MIT-MAGIC-COOKIE-1  654f19c4402f08944512da2ea041b4a6
+
+if below error :
+
+Error: Can't open display:
+#
+# echo $DISPLAY
+
+# DISPLAY=localhost:10.0; export DISPLAY
+
+
+remove the .Xauthoritu file if it oesn't work and recreate it
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ 
+	
+	

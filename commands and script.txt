@@ -1,0 +1,224 @@
+Commands and script
+
+1> Master -slave start stop: 
+938 master
+937 slave
+stop 938 then 937
+start 937 then 938
+
+track_activity_query_size=16384 put query of size 16k from 1k default to see the complete query.
+
+2>  show grants for 'zabbix'@'localhost';  // to check permission of a user.
+1>Temporary IP:
+ifconfig eth0:0 inet 192.168.128.10 netmask 255.255.255.0 up
+1> screen command : use TMOUT properly,else lead to disappearance of screen 
+#screen     //creates a new screen
+#screen -ls // list the screens 
+#screen -r  <screen-id>  //to attach a screen,
+#      detach : " CTRL+A d"
+       logging :" CTRL+A H" (log file at home directory).
+   Terminating : " CTRL+A K" or use "CTRL+d"
+   Terminating : " CTRL+A K" or use "CTRL+d"
+Attaching an attached screen :  screen -x <id>
+mount point : linking of partition with a directory is called as mounting or mount point
+               (access point of a part of land).
+1> blockdev --getbsz /dev/sda1  // to get block size
+Useful commands 
+i=`expr $i + 1`  // increases value 1 
+1> setenforce 0  //changing selinux at runtime temporarily,without restart
+2> http://linux.about.com/od/commands/l/blcmdl1_date.htm  // all about date formatting
+"$(date +"%b %d %R" -d '-6 min')  //Displays 6 min before time
+2> egrep '189.*DROP'  //to match inbetween letters
+1> sdiff file1 file2  //places file side by side.
+1> ls -S // size wise //-1 // column wise //r // reverse order   
+1>   touch -r something -d '-1 day' something 
+2>   NOW=$(date +"%m-%d-%Y")  // assigning value to a variable
+3>   :%s/foo/gcer/gc    //confirm and replace in vi
+3>   sed -i 's/ugly/beautiful/g' /home/bruno/old-friends/sue.txt
+4>   sed -i '/^HISTSIZE=1500/{s/$/\nHISTTIMEFORMAT=\"%d\/%m\/%y %T \"\n/}' /etc/profile //adding after histsize firstformat and adding a line after that
+5> date -d "1 day" //getting next date
+6>  sed '1d' file   // deleting the first line from file
+5>   nag ALL= NOPASSWD: /usr/local/bin/jk.sh,/abc/kl.sh  // allowing a user to run specific command as root user
+     nag ALL=(ALL) ALL
+6>   cat count.txt | awk '{ sum+=$2} END {print sum}'  //to sum the variables
+6>   sudo bash //to get root user login /var/log/auth.log 
+7>   sshpass -p 't@uyM59bQ' ssh -o StrictHostKeyChecking=no username@server.example.com 
+  -t "cd /some/folder/you/want/to/open;bash"
+  for i in `cat /tmp/list`; do echo $i; sshpass -p 'Tory134d$er' ssh -o StrictHostKeyChecking=no e600624@$i " ls -ltr /var/log/sa | tail -3";echo "====================";done >>/tmp/result
+8>   ps -udaemon -opid,ppid,nlwp  // to get the threads per process
+5>   changing repos could cause other dependency issues.
+6>  dmidecode|less
+ and look for System Information //to check it is physical or virtual
+ 
+ lspci |grep System peripheral  // shows the product info
+ LC_ALL=C sar -A -f sa07 > /tmp/disk07
+6>   grep -irl shmmax /etc/*   //searching a pattern in all files,l to list
+7>  getconf LONG_BIT    //to check server os is 64/32 bit
+8> i386, i486, i586, and i686 all are of 32 bit machine architecture softwares. 
+   x86_64 software 
+   uname -m (-p) // gives the os's machine architecture type.
+8>   echo $HOSTTYPE  or $MACHTYPE  // to get the machine architecture
+9>  DenyUsers|DenyGroups user1 user2 user@somedomain.com
+8>  declare -p //to list all variables
+8> ps au   // process running in the current terminal
+RSS (resident set size) shows the size of the program in memory. 
+START shows the time the process began running,TIME shows the cumulative system time used
+9>  script textfile.out  // records the tty ,to exit type exit
+10> pkill -KILL -u rsk1  //to kill user session
+11> running a command from another user in shell script :
+su - a1_platform -c "<cmd>"
+12> AEM good link
+http://dev.day.com/docs/en/cq/current/getting_started/download_and_startworking.html#Installation%20Requirements
+6> copying from git repository // download source code
+git clone  https://github.com/mstorsjo/fdk-aac
+7> steps to backup ro to rw
+umount /opt1
+vi /etc/fstab
+lsof /opt
+df
+mount -o remount,rw /opt
+fuser -k /opt
+fuser -m /opt
+fuser -m -u /opt
+fuser -v -k /opt
+umount -l /opt
+clusvcadm -e postgresql
+7> curl download
+curl -u  nagendra:N@gendra  scp://8.6.95.137:22/home/nagendra/20110227.csv 
+5>   commands to add the network disk on a virtual machine
+
+1> echo "- - -" > /sys/class/scsi_host/host0/scan
+2> fdisk -l  // to see all  (doesn't contain a valid partition table)
+3> pvs       // show physical volumes
+4> fdisk /dev/sde  //format the newly added disk,add disk as primary
+5> partprobe /dev/sde
+6> pvcreate /dev/sde1
+7> vgextend cq5vg /dev/sde1
+
+3>   top command explained
+a)Cpu(s):  0.0%us,  0.3%sy,  0.0%ni, 99.7%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
+us : user process,sy : system, ni : processes with priority upgrade nice
+id : ideal , wa : processes waiting for I/O operations,hi : CPU serving hardware interrupts
+
+top shortcuts : 
+1> type O (Capital for ordering)
+2) type c  // for complete path of command
+3> top -u abc  //as per user process
+4> top -p 1234 12356  // as per process id
+5> to show all the cores use 1
+6> top -n 2  // quit after 2 iteration
+7> top -b -n 1 > topusage // to run top in batch mode for 1 iteration
+
+4> zcat access15025.log.3.gz|grep "Sent SMS"|awk -F "[" '{arr[$4]+=1} END {for (i in arr) {print i,arr[i]}}'>>/home/ashwani/kan16625.txt  // to make sum,the occurence of a string
+
+4> /etc/rc.d/rc.local is file to put ur own scripts which will run after restart and all init level
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+> More commands
+su -c "/usr/sbin/tcpdump -i eth0 -s 0 -w /tmp/et4935/922_ws_1605.dmp port 8309"
+
+__________________________________________________________________
+
+>enabling dag and epel on centos and rhel servers
+
+http://www.server-world.info/en/note?os=CentOS_5&p=first_conf&f=5
+
+yum --enablerepo=dag install [package]
+yum --enablerepo=epel install [package]
+
+yum install duplicate arch packages
+
+----------------------------------------------------------------
+>> To have process accounting /etc/init.d/psacct  is used
+# install psacct rpm 
+# service /etc/init.d/psacct start  //logging is done /var/account/pacct* files
+or use /usr/sbin/accton /var/account/pacct
+to stop  /usr/sbin/accton    //without filename to stop
+# log are in binary form: dump-acct [pacct|file-name]
+process name, user time, system time, effective time, UID, GID, memory, and date
+some commands related with it
+a)lastcomm  //display all
+b)lastcomm [username|command]
+c) ac -d     //list user login time,day wise
+e) sa  // summarizes information about previously executed commands.
+f) sa -u // per user basis
+g) 
+----------------------------------------------------------------	
+Tsm
+a)dsmc  
+b)>help // to list all options
+c) /opt/tivoli/tsm/client/ba/bin/dsm.opt  //write ScrollPrompt	Yes
+                                                  Scrolllines	30 
+d)tsm>q sched  //complete description of schedule 
+e>q inclexcl   // partition/folder/file  
+f>q fi         // list partition which are backed up.
+g>q ba /home/ians/projects/*   
+h>q ba /home/ians/projects/* -subdir=yes
+i> rest "/var/log/tsm/dsmsc*" /tmp/ -subdir=yes -inactive -pick
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ps command tricks
+1>list process owned by specific user
+ps -f -u apache,root
+
+2> listing process in hierarchical  way
+ps -e -o pid,args --forest
+
+3> To list elapsed time of a process
+ps -p <pid> -o pid,etime=
+ dd-hh:mm:ss
+4> To check the threads of a process
+ps -C java -L -o pid,tid,pcpu,state,nlwp,args,etime=
+nlwp is no of light weight process,or say thread
+list all threads with command java
+
+5> to find memory Leak
+
+ps aux --sort pmem  //sort the process from pmem,highest at bottom
+
+ps ev --pid=27645   //27645 is the id of process,which u need to verify.if RSS and %MEM is increasing
+then one can say memory leak
+
+6> ps aux --sort=-pcpu,+pmem
+
+7> list the threads of a process
+ps -p 12473  -L    //12473 children process of httpd
+
+8> watch -n 1 'ps -p 12473  -L'  //can watch the threads of a httpd children process
+9> watch -n 1 'ps -e -o pid,uname,cmd,pmem,pcpu --sort=-pmem,-pcpu | head -15'
+
+10> Processes marked <defunct> are dead processes (so-called "zombies")
+11> If the length of the username is greater than the length of the display column, the numeric user ID is displayed instead. 
+
+%MEM : ratio of process's RSS with RAM.
+RSS(kb) : process's non swappable memory
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+fuser command // list process who are using specific sockets/port/files
+1> fuser -av <file_name>|port/tcp  //list the pid who are using this file
+2> fuser -k <file_name> //kill the pid,who are using this file
+3> fuser  -v .  // list all the process accessing the current directory.
+<pid>c : process using this as current directory
+     e : executable
+	 f : open file
+	 F : write file
+	 m : shared lib.
+4> fuser -v  80/tcp  //list all process listening tcp port 80
+5> fuser -m -v test.txt  // m enables to list all process belong to access the file system to whom
+                            test.txt related.
+6>
+	 
+
+j=`r=$(( $RANDOM % 20 )); echo $r*.1|bc`;echo $j
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Sep 11 11:21:38 <kern.crit> litmsj260b kernel: EXT3-fs error (device dm-42) in ext3_reserve_inode_write: Journal has aborted
+Sep 11 11:21:38 <kern.crit> litmsj260b kernel: EXT3-fs error (device dm-42) in ext3_truncate: Journal has aborted
+Sep 11 11:21:38 <kern.crit> litmsj260b kernel: EXT3-fs error (device dm-42) in ext3_reserve_inode_write: Journal has aborted
+Sep 11 11:21:38 <kern.crit> litmsj260b kernel: EXT3-fs error (device dm-42) in ext3_orphan_del: Journal has aborted
+Sep 11 11:21:38 <kern.crit> litmsj260b kernel: EXT3-fs error (device dm-42) in ext3_reserve_inode_write: Journal has aborted
+Sep 11 11:21:38 <kern.crit> litmsj260b kernel: EXT3-fs error (device dm-42) in ext3_delete_inode: Journal has aborted
+Sep 11 11:21:38 <kern.warn> litmsj260b kernel: __journal_remove_journal_head: freeing b_committed_data
+Sep 11 11:21:38 <kern.warn> litmsj260b last message repeated 2 times
+Sep 11 11:21:38 <kern.crit> litmsj260b kernel: ext3_abort called.
+Sep 11 11:21:38 <kern.crit> litmsj260b kernel: EXT3-fs error (device dm-42): ext3_journal_start_sb: Detected aborted journal
+Sep 11 11:21:38 <kern.crit> litmsj260b kernel: Remounting filesystem read-only
+

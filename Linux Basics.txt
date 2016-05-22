@@ -1,0 +1,20 @@
+                                     LINUX FUNDAMENTALS
+									 
+									 
+									 
+1> Linux/GNU  : A FREE S/W FOUNDATION rUns the GNU PROJECT.GNU : Generally not unix.it enhances the original commands
+                came from UNIX. 
+			    * The S/W are licensed with GPL,General Public License.
+				* FSF founder Richard Stallman.
+				* GPL states one cannot add enhancement,withhold the source code, and then sell the product as proprietary software.
+				* BSD softwares can be incorporated into proprietary  softwares.
+				* 
+2> freshmeat.net
+   sourceforge.net   S/W
+3> Many of the Tools come from BSD,BERKLEY SOFTWARE DISTRIBUTION.
+4> some keyboard shortcuts :
+
+Ctrl+Left/Ctrl+Right = Jumps between arguments (words) in your command
+Ctrl + U : Clears all characters starting from the cursor position.
+Ctrl + L : Clears the screen.
+Ctrl + R : Lets you search your command history.

@@ -1,0 +1,2695 @@
+f0> to work across the OS :  http://bhami.com/rosetta.html#software                               
+								 Linux Commands Explained
+								 
+	bonding  http://www.golinuxhub.com/2014/01/how-to-do-ethernetnic-bondingteaming-in.html
+	http://tldp.org/HOWTO/LVM-HOWTO/index.html    LVM
+	http://www.golinuxhub.com/2014/02/configure-red-hat-cluster-using-vmware.html  cluster						 
+	https://www.linode.com/docs  // very much informative and comprehensive								 
+http://www.howtoforge.com/  // good tuts								 
+http://docstore.mik.ua/orelly/networking_2ndEd/tshoot/index.htm  Networking troubleshooting tools				
+http://www.sureshkumarpakalapati.in/  overview site
+http://www.tecmint.com/create-multiple-ip-addresses-to-one-single-network-interface/				 
+			  http://www.slashroot.in/   // very good posts.
+			  http://linoxide.com/linux-command/linux-systemd-commands/
+		http://www.sanfoundry.com/1000-linux-command-tutorials/  dividing commands
+		Questions http://www.sanfoundry.com/technical-interview-questions/
+		http://www.server-world.info/   Server 
+		http://www.sanfoundry.com/   very good site
+				        curl   http://www.slashroot.in/curl-command-tutorial-linux-example-usage
+				       http://www.softpanorama.org/Utilities/curl.shtml
+             Networking :  http://www.yolinux.com/TUTORIALS/LinuxTutorialNetworking.html	
+              http://www.yolinux.com/TUTORIALS/
+			  http://teaching.idallen.com/cst8207/12f/  : very good refreshing
+			  http://linoxide.com/category/netwrk/
+			  lvm : http://www.howtoforge.com/linux_lvm
+   LVM : http://unixadminschool.com/blog/2011/08/experience-lvm-logical-volume-manager-with-real-time-examples/#
+All linux commands : http://www.hscripts.com/tutorials/linux-commands/index.php
+all services  : http://www.hscripts.com/tutorials/linux-services/index.php
+http://go2linux.garron.me/linux/  many tricks
+http://landoflinux.com/linux_basic_fundamentals.html
+http://www.danielmiessler.com/study/
+http://mylinuxbook.com/   very good posts
+basic :  http://www.doc.ic.ac.uk/~wjk/UnixIntro/index.html
+Redhat cluster : http://www.sysadminshare.com/2014/02/redhat-cluster-interview-questions-and.html
+Multipath :  http://www.sysadminshare.com/2013/06/multipath-config-status-check-in-linux.html
+svn : http://www.hscripts.com/tutorials/svn-commands/index.php
+Git : http://www.softprayog.in/tutorials/git-tutorial
+route : http://www.softprayog.in/tutorials/routing-in-linux
+Java :  http://javarevisited.blogspot.in/
+ebook download : http://ebook-dl.com/
+
+http://www.dedoimedo.com/computers/linux_commands.html    good resources
+http://www.dedoimedo.com/computers/linux-cool-hacks.html
+http://www.dedoimedo.com/computers/linux-cool-hacks-more.html							 
+
+softwares were named as they get made on intel processors :
+
+x86  FAMILY
+i386 softwares : made for  Intel 80386 processor ,32-bit microprocessor introduced by Intel in 1985
+i486 softwares : made for  Intel 80486 processor ,32-bit microprocessor.
+i586 softwares : made for  Intel 80586 processor ,32-bit microprocessor.
+i686 softwares : made for  Intel 80686 processor ,32-bit microprocessor.
+
+Central Processing Unit [CPU] :: consist processor ,earlier it was 1.
+               Multi Processor :  latter we have two CPU on single motherboard,each with 1 processor
+		Increasing the processor causes heating  ,increase in size and complexity.
+		Then core concept is introduced,two CPU into one single chip consuming lesser power and less size.
+		2 processor = dual core
+		4 processor = quad core
+		
+    *	grep processor /proc/cpuinfo |wc -l
+NOTE : if hyperthreading is enabled then it should be divided by 2,as it shows logical cpu into 2.
+hyperthreading doubles the resources like cpu ,registers etc.
+cat /proc/cpuinfo | grep flags | uniq | grep -i  "ht"  // in flags there will be "ht"
+
+x86_64 FAMILY : for 64 bit OS
+uname -m|p
+lscpu | grep -i arch
+getconf LONG_BIT
+getconf -a  // list all the system Variables
+
+
+understanding /proc/cpuinfo :::
+a) physical id : it represent the CPU,it will always be 0 unless u have  "multiprocessor setup" two separate, "Physical Processor" in a machine.
+b) siblings : no of processor attached to same "Physical CPU".
+c) core id : identifier of current core,out of total cpu cores.
+one can identify the processor on same "Physical Processor" and on same core via above 3.
+
+If the number of cores ("or cpu cores") = the number of siblings for a given physical processor, then hyperthreading is OFF.
+To find the no of cores : 
+
+$ less /proc/cpuinfo | grep "physical id" | sort|uniq | wc -l
+2
+
+$ less /proc/cpuinfo | grep "core id" | sort|uniq | wc -l
+4
+=====>>>>  2*4=8 core.
+
+Dual core : two processor 
+A dual core cpu running at 3.0Ghz should be faster then a dual cpu (separate core) system running at 3.0Ghz due to the ability to share the cache at higher bus speeds.
+
+1> arch : displays machine architecture type,same as "uname -m".
+$HOSTTYPE : it defines the type of machine.
+$OSTYPE   : it defines the OS name
+
+H/W capability ::::
+lscpu   : op-mode // cpu capability.
+grep -w lm /proc/cpuinfo
+
+32-bit processors typically use memory addresses that are 32 bits wide. The 32-bit wide address allows the processor to address 2^32 bytes of memory ,which is 4GB.
+
+Older Kernel were supposed to use only 4GB of memory,to get use of more memory one need to use the kernel-PAE package. by ####  yum install kernel-PAE
+
+x86 architecture presently uses only 36 bits out of 52 bits possible.
+grep physical /proc/cpuinfo
+address sizes	: 36 bits physical, 48 bits virtual   // 32 bit
+address sizes   : 40 bits physical, 48 bits virtual   // 64 bit,in 64 bit 
+
+1> uname  : Print information about the machine and operating system.
+           * uname -i  // Print the system’s hardware platform.
+		   * uname -m  // Print the name of the hardware that the system is running on.
+		   * uname -n  // Print the machine’s hostname.
+		   * uname -o  // Print the operating system name.
+		   * uname -p  // Print the type of processor.
+		   * uname -r  // kernel release.
+		   * uname -v  // kernel version.
+
+2> swap out is a function of who has the least needed pages
+   Who you swap in is a function of who has the most needed pages.
+   ps -aux :::  RSS is the RAM used by used by each process
+   free -m ::  +/- buffer/cache  
+             total       used       free     shared    buffers     cached
+Mem:          1877        952        925          0        118        340
+-/+ buffers/cache:        493       1384
+Swap:         4031          0       4031
+*//actual usage is : 118+340.
+buffers :  memory reserved by the OS to allocate as buffers when process need them.
+          it is the data which is in RAM and need to be flushed.(Temp Storage)
+          done periodically by bdflush daemon.
+		  can be done with command : sync
+           
+cached  :  recently used files being stored in ram
+
+Major Page Fault : is a request, done to fetch pages from the hard disk and buffer it to RAM.
+Minor Page fault : is a request, done to fetch pages from the RAM and buffer it to buffer cache.
+
+
+****  /proc/sys/vm/drop_caches  have different values
+   echo "1" > /proc/sys/vm/drop_caches  ,,, page-cache
+      1 :: to drop the cached and buffers data.
+	  3 :: 
+pmap `pgrep apache` | grep total
+------------------------------------------------------------------------------------------------------
+Insight  of Memory Usage and Organization :
+
+Kernel Memory  : a) Text : read only part of program.
+                           Actual instruction code.
+						   Several instances of the same program can share this area of memory.
+				 b) Static Data : Global and Static Variables.
+				                  system allocates a copy of this memory area for each instance of the program.
+			     c) User Memory :  heap and unused memory.
+			                       heap is where user-allocated memory is located. The heap grows up from a lower memory address to a higher memory address.
+				 d) Stack  : made during function call,to store the local variables.
+				             stack grows down from a higher memory address to a lower memory address.
+	deal with programs that create a lot of identical children processes, like Java. ps might report that each Java process uses 100 megabytes of memory, when the reality might be that the marginal cost of each Java process is 10 megabyte of memory. 
+	will give you a detailed snapshot what’s going under the kernel bed sheets ::
+	for i in `ps -eaf | grep httpd | grep -v grep | awk '{print $2}'`;do echo -n "PID $i actual memory usage is :" >> totaluse.txt; pmap -d $i | grep -i "writeable/private: " > totaluse.txt; done 
+------------------------------------------------------------------------------------------------------
+
+3> alias  //prints all the aliases
+
+4> cat -b  ::  print no. against all NON BLANK lines
+       -n  ::  print no. against all lines .
+	   -s  ::  squeeze multiple blank lines to 1
+	zcat   :: displays the .gz file   
+   tac  {file} : prints file in reverse ,with last line as first line
+	   
+5> chmod  [-R]   // Recursively changes the files and directories
+6> chown  [-R]   u[:|.]g   // execute ,access for dir
+7> chsh    -l   // list all the shells in /etc/shells
+           -s /new/shell  // changes the current login shell in /etc/passwd
+		   -s /new/shell user // changes permanently in /etc/passwd
+		   
+7> cksum [filename]  //CRC,Cyclic Redundancy Check and no of bytes in file,used to check tampering while transition
+   sum  bytes file_nmae  // prints checksum and bytes in file.
+8> md5sum  compute or check 128 bit md5 checksums.
+            : md5sum <filename>  // prints the sum and file name.
+			: md5sum -          // prints the md5sum for string.
+			"input string"
+			: md5sum *.vim > t.md5 
+			      then use  md5sum -c t.md5   // it recomputes the md5sum with file name.
+		    * 
+8> clear
+9> cal    // prints the current month
+            cal 12 2008   // prints the December.
+            cal -y   : prints the whole year
+9> comm [-123] file1 file2  // shows unique and common values from SORTED files 
+                           // 123 to suppress the column
+						   1 : unique values of sorted file1
+						   2 : unique values of sorted file2
+						   3 : common values in file1 and file2
+10> cp [option] source destination
+    -i :  prompt before overwriting of destination file.
+    -f :  remove existing destination files.
+  a/-p :  preserve all permission,ownership,timestamps,links.
+ -r/-R :  copy directories recursively.
+ 
+11> cpio : Copy in copy out,used to handle various formats of archive
+           and unlike "TAR command " input can be chain to it,can skip the damaged sections of archive whike tar stops completely,
+		   
+		   * ls | cpio -ov  > /tmp/new.cpio  // create archive file.
+		   * cpio -iv  < /tmp/new.cpio       // extracts all the files.
+		   * find . -iname *.c -print | cpio -ov >/tmp/c_files.cpio   // chaining is not possible with TAR.
+		   * cpio -iv < /tmp/sample.tar   //can extract the tar archive.
+		   * cpio -tv < /tmp/sample.tar   // list the content of an archive,of any type.
+		    
+12> rpm2cpio : exports an RPM package file into the format that the cpio command expects.
+               rpm2cpio package_file.rpm | cpio –t
+
+	crond daemon will run the commands specified in files. /etc/crontab /etc/cron.d/  
+	
+11> crontab [-e|-l|-r][-u]  // if there is clash result is ORed.
+                            // day of week and also we have day of month.
+    #MIN HOUR DAY MONTH DAYOFWEEK        COMMAND						
+    0-59 0-23 1-31 1-12  0-6 //0 Sunday
+	* : every.
+	x/2 : in every 2.
+	1,2 : multiple values.
+	a-b : Range
+    23-7/2,8 : every two hours from 11pm to 7 am and at 8 am.
+	command : /bin/sh –c <command>
+12> anacron :: * it's the cron for laptop/Desktop who don't run 24 hrs.
+               * a missed job will run ,the time machine is up again.
+			   * it uses /etc/anacrontab
+				period   delay   job-identifier   command
+				7        15      test.daily      /bin/sh /home/sathiya/backup.sh
+				a) Period  : 1 daily , 7 weekly ,30 monthly, N in N days,
+				b) delay   : job will executed,after "delay minutes" when the system is up.
+				c) job-identifier : the the timestamp when it ran last time , under /var/spool/anacron 
+				d) command  : command or shell script.
+				
+    // so this will run Once in a week,and if missed will run 15 min delay the moment machine is up,next time.
+	  with the timestamp file under /var/spool/anacron/
+	            *  It also uses two shell variables :
+				START_HOURS_RANGE : this will be the window,3-22,3 am to 10 pm.
+				 RANDOM_DELAY : this random delay adds to user defined delay to execute a job.
+				                45,(0-45 can be added with user defined value)			
+				
+				            
+12> csplit <file_name> 10 15   // outputs three file 1-9,10-14,15-rest.
+13> cut [-c] //character or character list.
+        -d [-f] // field or fields list,which are separated by some character.
+		-s // if a delimiter is not matched ,then by default cut displays the whole file
+		      to suppress this behaviour this option is used.
+		
+	cut -c2 test.txt    //prints 2 column
+	cut -c1-3,4-5 test.txt  // prints 1-3 and 4-5 column
+	cut -c-8 ,-c8-         // prints from 1-8,and 8 to rest
+	
+	cut -d':' -f1,3 /etc/passwd
+	cut -d\   -f1   /etc/passwd   //to delimit space
+	cut -d"\"" -f1  /etc/passwd   // to delimit quote.
+	cut --complement  -d':' -f1,3 /etc/passwd  // shows all except field 1 and 3.
+	cut -d':'  -s -f1,6,7 --output-delimiter='#' /etc/passwd  //change the delimiter
+                                            =$'\n'  each output new line.
+14>  date +"%b %d %R" -d '-6 min' //display date .
+     date -s "01/31/2010 23:59:53"   // to set the date
+	 # hwclock –systohc     // syncing the HW clock
+     # hwclock --systohc –utc
+	 
+	 change the timezone:  /usr/share/zoneinfo  all time zones
+	 a)rm -rf  /etc/localtime
+	 b) ln -s /usr/share/zoneinfo/Asia/Kolkata localtime
+	 http://www.cyberciti.biz/faq/linux-unix-formatting-dates-for-display/
+	 
+15> env/printenv  : prints the Environment variables set.
+	 
+15> echo  :  displays the output 
+             echo "hi how r u"
+			 echo -e "hi\nhow\nr\nu"    // treats them as \n : new line,\b : backspace , \t : horizontal tab
+			                                              \v : vertical tab
+			 echo -E "hi\nhow\nr\nu"    // treat them normal.
+			 echo -n "hi"         // suppress the line after output
+15>  dd   // create a file of fixed size,
+            a) used for backup related tasks,
+			 dd if=/dev/sda of=/dev/sdb conv=noerror,sync  [Continue even after read errors.]
+			b) can create image of HDD or partition in faster way than other backup
+             dd if=/dev/hda of=~/hdadisk.img
+			 dd if=hdadisk.img of=/dev/hdb
+			c) can create iso image,reads/write 2048 bytes at one time
+			dd if=/dev/cdrom of=tgsservice.iso bs=2048
+			d) dd if=/dev/zero of=/root/myswapfile bs=1024 count=10 //1024 bytes read and write 10 times.
+			
+16> modprobe ::to handle loadable modules(The Linux kernel has a modular design),/lib/modules/$(uname-r)
+             * at boot time a minimal modules get loaded into memory.
+			 * modules == DRIVERS
+			 
+			 a) modprobe -l //will display all available modules
+             b) lsmod   //lists currently loaded modules.
+			 c) modinfo  <module_name>   // it will show the module description.
+			 c) modprobe vmhgfs  // to load a new module,and all other modules on which it depends.
+			 d) modprobe vmhgfs -o vm_hgfs  // to load a new module with different name if conflicts
+			 e) modprobe -f <module_name> // ignore all info during module insertion.
+			 e) modprobe -r vmhgfs  // removes the currently loaded module,and those which depend on it.
+			 f) modprobe -c  // shows current configuration,aliases of modules,blacklisted modules.
+			 g) modprobe -n  <module_name>  // dry run
+-------------------------------------------------------------------------------------
+                                 Understanding Linux file system
+
+BlockSize  : size which is used to read/write data.higher is better for high disk I/O for large files say DB Server.lesser I/O.
+linux offer numerous file system types:
+a) ext2 : This is like UNIX file system. It has the concepts of blocks, inodes and directories.
+b) ext3 :  It is ext2 filesystem enhanced with journalling capabilities. Journalling allows fast file system recovery.
+c) Isofs (iso9660): Used by CDROM file system.
+d) Sysfs: based on ramfs, It is use to exporting kernel objects so that end user can use it easily.
+e) Procfs : user --> proc --> kernel DS,can obtain info and change at run time.
+
+Superblock : a hdd is divided into different filesystem.
+             each filesystem is divided into blocks
+			 blocks contains files and metadata
+			 metadata : stores/describes the structure of file system : inode,superblock and directories.
+			 
+			 Superblock contains : 
+			 File system type
+             Size
+             Status
+             Information about other metadata structures
+			 dumpe2fs /dev/sda1 | grep -i superblock
+			 
+Surviving a Linux Filesystem Failures : 
+a) umount the filesystem
+b) e2fsck -f /dev/sda3  // force checking even it is clean.
+c) if superblock is not found,e2fsck will return error.
+For filesystems with 1k blocksizes, a backup superblock can be found at block 8193
+For filesystems with 2k blocksizes, at block 16384
+For 4k blocksizes, at block 32768.
+or to find the location of superblock use : dumpe2fs /dev/sda3|grep -i superblock
+d) repair it with alternative superblock :
+e2fsck -f -b 8193 /dev/sda3
+			 
+Inode :::  inode identifies the file and its attributes ,it's a complex DS.Each inode is identified by a unique inode number within the file system. Inode is also know as index number.
+             1 Object ---  1 inode
+    
+	         ls -i /etc/passwd
+			 stat /etc/passwd   //to get complete info.
+			 removing file with inode no.
+			 find . -inum <inodeid> -exec rm -i {} \;
+-------------------------------------------------------------------------------------
+17> df  :: shows the free disk space.only mounted ones
+        a : all file system
+		h : human readable
+		T : file system type
+		i : lists in inode format instead of blocks.
+		
+18> dig :: sends DNS query packets to Name Server.(by default it displays the A record)
+           it uses /etc/resolv.conf as the default DNS to resolve queries.
+		   
+        a) dig globester.com
+		header
+		QUESTION SECTION: the question it asked the DNS
+		ANSWER SECTION:  This displays the answer it receives from the DNS
+		;; ANSWER SECTION:
+        redhat.com.		588	IN	MX	5 mx1.redhat.com.     // 5 and 10 are weightage
+        redhat.com.		588	IN	MX	10 mx2.redhat.com.    // lesser having higher prio.
+
+		AUTHORITY SECTION: displays the DNS name server that has the authority to respond to this query.
+		Non-Authoritative Answer :DNS servers will not have the complete zone file information available for a given domain. Instead, it maintains a cache file which has the results of all queries performed in the past for which it has gotten authoritative response. When a DNS query is given, it searches the cache file, and return the information available .
+		Basically this displays available name servers of globester.com
+		ADDITIONAL SECTION: This displays the ip address of the name servers listed in the AUTHORITY SECTION.
+		STATS 
+		
+		b) dig globester.com  MX   // list of all the mailservers for globester.com
+		c) dig globester.com   NS  //list of authoritative DNS servers for globester.com
+		d) dig -x 65.182.162.217
+		e) dig @ns.pugmarks.com. globester.com
+		f) dig globester.com +trace  // show tracks how the query went
+		g) dig -p [port] globester.com  // default is 53.
+		
+		Same using Host command
+		   host  -a cyberciti.biz  // prints all records
+		a) host -t a cyberciti.biz
+		b) host -t mx cyberciti.biz
+		c) host -t ns cyberciti.biz
+		d) host -t cname files.cyberciti.biz
+		e) host -t soa cyberciti.biz
+		f) host cyberciti.biz ns2.nixcraft.net  [NS =ns2.nixcraft.net]
+		g) host -t any cyberciti.biz
+        h) host 75.126.153.206
+        i) host -v -t a i.hexindia.net  // gives ttl info,with verbose output.
+		j) host -r i.hexindia.net // will not lookup further DNS servers,reply only with its own DB.
+		k) host -d i.hexindia.net // turn on debug mode.
+		l) host -l <Domain_name>  // list all the nodes in that domain.
+		m) 
+		
+19> domainname  [ name ]  // set if uid = 0,prints the domainname.
+     
+	    /etc/rc.local is executed at last during boot.
+		
+20> du  // disk used
+      c  : Grand Total
+	  a  : all files,not just subdirectories."RECURSIVE TRAVERSE"
+	  s  : grand total of each subdirectory.
+	  m  : show result in MB.
+	  
+	  du -sm *
+	  
+21> diff  // compares files line by line
+           * diff file1 file2       // shows the line which don't match
+		                            < content of file1
+									--------------------
+									> content of file2
+		   * diff -i file1 file2    // ignore the cases
+		   * diff -w file1 file2    // ignore spaces in lines, and then compare
+		   * diff -y file1 file2    // prints the file side by side
+
+22> file  : tries to identify the file,as per the type of data it contains.
+            /usr/share/magic 
+21> find  // finds files and directories
+
+Access time : Access time gets updated when the file accessed.
+Modification time :  Modification time gets updated when the file content modified.
+Change time : Change time gets updated when the inode data changes.means to permission/ownership etc.
+
+      a) find . -name tecmint.txt
+	  b) find /home -iname tecmint.txt  // ignoring case of file name
+	  c) find / -type d -name Tecmint   // print directories
+	  d) find . -type f -not -name "*.php"   // all files with not php extension.
+	     find . -name '*.php' -o -name '*.txt'
+	  e) find . -type f -perm 0777 -print 
+	  f) find / -type f -perm 0777 -print -exec chmod 644 {} \;  // ; breaks the command
+	  g) find / -user root -name tecmint.txt  
+	  h) find /home -group developer
+	  i) find / -mtime|-atime  +50   // modified and accessed files 50 days before.
+	  j) find / -mtime +50 –mtime -100  // files modified 50-100 days back
+	  k) find / -cmin -60   // files changed in last 60 min
+	  l) find / -amin -60   // files accessed in last 60 min
+	  m) find / -size +50M -size -100M  // files size between 50 -100 MB
+	  n) find / -maxdepth 2 -name "*.php"
+	  o) find / -inum n  // search based on inode
+	  p) find / -perm 2644  // sgid/suid bit set
+	  q) find / -perm 1664  // sticky bit
+	  r) find -newer /etc/passwd   // prints file which are modified after passwd.
+	           -anewer|-cnewer
+      s) find / -xdev -name "*.log"  //  Don’t descend directories on other partitions.
+	  t) find -name "*.html" -exec ./mv.sh '{}' \;
+	  mv.sh ==>>  mv "$1" "`basename "$1" .htm`.html"
+	  
+22> ftp commands
+23> fuser  fuser [options] [files | filesystems] // Identify process using files or filesystem.
+    a)fuser -v  <filesystem|file>  // output is <pid>rcrfFme 
+	 c      current directory
+     e      executable being run
+     f      open file. f is omitted in default display mode
+     F      open file for writing. F is omitted in default display mode
+     r      root directory
+     m      mmap’ed file or shared library
+	b)fuser -v -n tcp 80  // n tcp port no.
+    c)fuser -v -k /usr/sbin/httpd  // kill the process
+	d)fuser -k  80/tcp
+	e)fuser -vm  <file>   // -m switch shows all process accessing the filesystem, which the file is on.
+	
+24> gcc : GNU compiler collection,complies multiple languages C, C++, Objective-C, Ada,FORTRAN, and Java) to machine code.
+	
+24> awk :  “Aho, Weinberger, and Kernighan”
+   ** Awk treats input as "Record which are composed of fields"
+   
+   awk '/search pattern1/ {Actions;}
+> /search pattern2/ {Actions;}' file   
+  
+  // search pattern regular expression.   
+  //if multiple pattern then each must be separated by new line.
+ //it process file line by line and perform action.
+ //Single quotes around program is to avoid shell not to interpret any of its special characters.
+ 
+    a) awk '{print $2,$5,$NF;}' employee.txt  // print 2nd and 5th column.,NF last field.
+	                                             $0 :: represents complete line/record.
+	b) awk -F:  '{print $1}' /etc/passwd
+	
+	awk 'BEGIN { Actions;}  # before start doing processing
+    {ACTION;}           # Action for every line in a file
+    END { Actions ;}' file    # after all lines in file get processed.
+	
+	c) awk 'BEGIN {print "Name\tDesignation\tDepartment\tSalary";}
+      {print $2,"\t",$3,"\t",$4,"\t",$NF;}
+      END{print "Report Generated\n--------------";}' employee.txt
+ 
+    d) awk '$4 ~ /Technology/' employee.txt   // 4th column of every line will be matched against the 
+	                                           regular expression,and if matches it prints the whole line.
+											   
+	e) awk 'BEGIN {count=0;} /Technology/ {count++;} END { print count;}' employee.txt
+	         #it matches technology in every line and if matches it increases the count.
+			 #awk variables must start with letter.
+	f) awk -F':' 'BEGIN{OFS="=";} {print $3,$4;}' /etc/passwd
+	                   #OFS is output field separator in awk,default is space
+	g) awk -F"\n" 'BEGIN{ RS="\n\n";}  {print $1, $2}' employee.txt
+	   Ajay             it prints    Ajay
+	   2345                          2345
+	   1                             Vijay
+	   2                             2346
+	   
+	   Vijay             # RS = Record Separator
+	   2346              here we set RS=\n\n,so each student record is separated
+	   2
+	   3
+	             
+				 
+	h) awk /Search/ '{print $1,NR}' employee.txt  //NR increments on each successful match.
+	i) awk '{print NR,"->",NF}' employee.txt  // NF,no of fields in a record.
+	j) awk 'BEGIN { a=0} /\/sbin\/nologin/ {a++;} END { print a}' /etc/passwd
+
+	           /Search-pattern/
+	k) awk -F ':'  '$3 > maxuid { maxuid=$3; maxline=$0 }; END { print maxuid, maxline }' /etc/passwd
+	l) awk '{if ($3 >=35 && $4 >= 35 && $5 >= 35)
+	print $0,"=>","Pass";
+else
+	print $0,"=>","Fail";
+}' student-marks
+	
+	
+25> grep : it matches the arg|pattern against each line in a file or files.
+    egrep = grep -E // treats pattern as extended regular expression.
+  
+    a) grep -i "abc" file1*   // insensitive search
+	b) grep "lines.*empty" demo_file  
+	c) grep -w abc  file1   // exact match
+    d) -A n : n lines after match (also it shows the matching line)
+       -B n : n lines before match
+       -C n : n lines before and after match.
+	e) grep -irl abc  *  // search recursively.
+	f) grep -c "pattern" filename // count the no of times the pattern
+	g) grep -o "is.*line" demo_file  // prints only the word.not line
+	h) grep -n "abc"  file1 // displays the line no of matched pattern.
+	i) grep "terminating.$" messages
+	j) grep "127\.0\.0\.1"  /var/log/messages.4
+	k) egrep 'a|b' file
+	k) zgrep "pattern" filename.gz   //invoke grep on gz files
+	l) bzless and bzmore	
+    Compressing files under Linux :::
+26> gzip : compress files using "Lempel-Ziv coding (LZ77)"
+     gzip, gunzip, zcatgzip, gunzip, zcat
+	 a) gzip abc    *-z //Lempel-Ziv 
+	 b) gzip -r <dir_name>
+	 b) bzip2 abc   *-j // Burrows-Wheeler block sorting text compression algorithm, and Huffman coding
+     c) zip abc.zip abc
+	 d) tar -rvf data.tar newfile   // appends to existing archive at the end.
+	 d) tar -uvf data.tar newfile   // add file in archive if modified or not there.
+	 d) tar -zcvf data.tgz *.doc  // c - creates a new archive. 
+	 e) tar -cjf nutshell.tar.bz2 /home/username/nutshell
+	 e) gunzip abc.gz
+	 f) bunzip2 abc.bz2
+	 g) tar [-xvzf|-xjvf] abc.[gz|bz2]
+	 h) tar -xvf  abc.tar  file1 file2 // extracts only the specific file.
+	 h) tar -ztvf {.tar.gz}  // to see the content of tar gz archive.
+	 i) unzip abc.zip  // unzip -l  <file.zip>  to check the file contents
+	 j) tar -xvf {tarball.tar} {path/to/file}  // extracting single file
+
+26> pwd  : prints the current directory.
+27> env  : prints the environment variables.
+           * env variable=value   //sets new value to a variable
+		   * env -u variable    // unsets the variable.
+		   
+28> expr :  expr arg1 operator arg2
+		   
+27> head -n 18
+28> hostname  [nameofhost]  //set at boot time by script /etc/rc.d/rc.sysinit
+             * hostname -a  // displays the alias
+			 * hostname -d  // display DNS Domain name
+			 * hostname -f  // display FQDN name
+			 * hostname -i  // Display ip address of host
+			 * hostname -y  // display NIS domain name.
+29> kill 
+         kill -l   // list all the signals.
+It all depends upon how a program is configured to behave on receiving various signals.
+SIGHUP  ::  kill -1  <pid>   //"Hangup" [causes apache to reread its conf]
+SIGINT  ::  Kill -2 <PID NO>  // Ctrl+c
+SIGKILL ::  kill -9 <PID NO>  // process get killed ungracefully.
+SIGTERM ::  Kill -15 <PID NO>  // process to get killed gracefully.,most secure way
+
+30> killall [SIGNAL] <Name_of _Process>   // useful when a process have many instances.
+31> last  :: last login of user ,it uses the /var/log/wtmp file 
+        a) last -10   // last 10 entries
+		b) last reboot
+32> lastb  : list recent bad login attempt from /var/log/btmp
+32> ld : Shared Library Management & Debugging Problem
+        * All shared libs are present in /lib64 and /usr/lib64.
+		* one can write it's program and use these libs.
+		* We have two types of libs 
+		     a) Static libraries  :  lib*.a ,files are included into executables,at compile time.
+			                         "object code"
+			 b) Dynamic Libraries :  [DSO FILES,dynamic shared object] lib*.so,files are not copied into executables,the executable(main program) will automatically load the libs using 
+			 using "ld.so or ld-linux.so".binding occurs at run time.
+			 
+		Some Files ::
+		* /lib64/ld-linux-x86-64.so.2 : Execution time linker/loader
+		* /etc/ld.so.conf : files containing the directories,in which to search the libs
+		* /etc/ld.so.cache: contains the ordered list of libs found in directories mentioned by   /etc/ld.so.conf,created by ldconfig .
+		
+		
+		Some commands :
+		a) ldconfig : it creates,update,removes the link to the most recent shared libs found in trusted directories for use by run-time linker, "ld.so".it also maintain the /etc/ld.so.cache to speed up the linking process.
+		* it checks the header of the libs and file name when determining which will be the appropriate version.
+		
+		Suppose u installed a new set of libs in /usr/local/lib/ ,then when u execute a program which needs the lib which got recently updated in /usr/local/lib/ ,it is quite possible the program through the error of "Missing library",to avoid the situation .
+		* ldconfig -l /path/to/lib/our.new.lib.so   // manual link up,but not persistent.
+		* create a file under /etc/ld.so.conf.d/  which contain :: /usr/local/lib/
+		  then run ::  ldconfig    // this updates the /etc/ld.so.cache
+		  
+		  ldconfig -v   // prints all the libs.
+		  ldconfig -p   // prints the current libs in /etc/ld.so.cache
+		
+		
+		b) ldd ( list dynamic dependencies/libs used by a program) 
+		       ldd /usr/sbin/httpd
+			   ldd -d /path/to/executable  // report missing function.
+			   ldd -r /path/to/executable  // report missing objects.
+			   
+		c) LD_LIBRARY_PATH  environment variable ,decides the dynamic libs path
+		   export LD_LIBRARY_PATH=/opt/simulator/lib:/usr/local/lib
+     
+        d) ld  : combines several obj files in the specified order into a single executable object module.
+                 a.out by default.
+				 link editor command ,called by compiler.
+33> ln  : ln -s {target-filename} {symbolic-filename}
+
+34> unlink  <soft_link>  // removes the link.
+
+34> locate : /var/lib/mlocate.db ,updated by updatedb 
+             locate <file_name>
+35> logger : logs entries in /var/log/message via syslogd.
+             logger  <message>
+			 logger  -f /path/of/file    // all content will be in messages
+35> ls :  -a  : hidden file
+          -i  : inode num.
+          -r  : reverses the order.
+          -t  : time 
+          -R  : recursively
+		  -h  : human readable format
+		  -1  : in single line,without attributes.
+		  -S  : sort by size,
+35> lspci  : peripheral devices are connected to system via pci buses.
+             lspci 
+              
+36> lsmod  : list all kernel modules,which are in memory,reads from /proc/modules
+37> lynx   : lynx -auth=id:password http://linuxcrazyadmins.com 
+             lynx -dump http://linuxcrazyadmins.com  ::: dump the text and links from a Web page in the terminal.
+			 lynx -dump -head http://linuxcrazyadmins.com   // only http header packet.
+			 lynx -source  http://linuxcrazyadmins.com  // prints the source code.
+			 
+		  Tip: lynx -dump "http://www.example.com" | grep -o "http:.*" | sort | uniq >file.txt
+		  
+		  Download all the links 
+		  lynx --dump http://somesite.com/page.html | awk '/http/{print $2}' | grep jpg > /tmp/file.txt
+		  for i in $( cat /tmp/file.txt ); do wget $i; done
+		  
+38> md5sum  : md5sum filename  // generates message digest.
+              md5sum -c        // this compares and let us know the result.
+			  <md5sum digest> filename
+
+39> mkdir -p : // creates the dir hierarchy 
+             permission : 777 - umask
+			 
+40> more , zmore
+41> mv source destination    // rename files and directories.
+42> nm : list symbol from object files .o
+23> named  : used by the resolver libraries to provide access to Internet distributed naming database.
+             named as provided by Internet Software Consortium’s Berkeley Internet Name Domain (BIND) version 9.2.x.
+             * named -p port  // default is 53.
+			 * read /etc/named.conf when starts up 
+			 * named -c /file/name   // reads this as conf file.
+			 
+
+24> pmap  : list the memory consumption of process.
+            * pmap <pid1>  [<pid2>]
+			Memory Segment       Size  Perm      full Path of so
+			00007f446ceeb000      8K   r-x--     /usr/lib64/apr-util-1/apr_ldap-1.so
+			* pmap -x <pid>  // extended format
+			Address           Kbytes     RSS/KB   Dirty/KB    Mode     Mapping
+            00007f446ceeb000       8       8        0         r-x--   apr_ldap-1.so
+            START ADDRESS OF MAP                                        [ anon ]  : ALLOCATED MEMORY
+			                                                            [ stack ] : THE PROGRAM STACK
+44> ps : reports process status
+       -e : Select all processes.
+	   -F : Set extra-full format.
+	   C  : cpu used
+	   SZ : virtual size of the process + code + data and stack segments,virtual memory usage.
+	  RSS : resident set size, the non-swapped physical memory that the process has used in kilobytes.
+	  PSR : to which processor it is being assigned to.
+	 pcpu : cpu time used by the process.
+	 pmem : Ratio of RSS with Total RAM.
+	 TIME : the amount of CPU time accumulated by the current process
+	 PRI  :  Priority of the process.
+	 start : Start time of the command.
+     STAT : R Runnable,S Sleeping interruptible wait(,waiting for input from user/waiting for interrupt)
+	        D uninterruptible wait or swap (waiting for something to get completed,like I/O,these process wont accept any signal)
+			Z Zombie (kill -s SIGCHLD 2343,2343 is ppid,it gives a signal to reap it's children who are zombie).
+			zombie eats the ram and the pid value which can be used by another process.they are in this state due to "a lot of time taken by Parent process to collect the status of children process).
+			Orphan process : whose parent got killed,are then adopted by init process.
+			,T Traced or stopped
+			+  : Part of foreground process group.
+			<  : High priority (not “nice”).
+			N  : Low priority (“nice”).
+	 WCHAN: Memory address of the event the process is waiting for
+	    * ps -f -u www-data  // display user process.
+		* ps -p 26999 -L -o pid,tid,pcpu,state,nlwp,args   // "L" display all threads of a process.
+		                    nlwp :  number of light weight processes.
+						lwp/tid  : shows the thread id of each thread.
+	    * ps -e -o pid,comm,etime // shows elapsed time of a process.
+		  ps -p <pid> -o pid,etime=   
+		  gives output in format // dd-hh:mm:ss
+		* ps -eo uname,pid,ppid,nlwp,pcpu,pmem,psr,start_time,tty,time,args
+	    * ps -eo uname,pid,ppid,nlwp,pcpu,pmem,psr,start_time,tty,time,args --sort -pcpu,-pmem  
+	    * ps ex   //list all process,not owned by any terminal
+		* ps r    // shows only running process
+        *  service --status-all | grep running  // list the daemon process.
+	    cat /proc/sys/kernel/pid_max  // 32768,is the no of process,which can run on kernel 2.5 and above
+		kernel.pid_max=<maximum value>  in sysctl.conf //can be changed
+		
+		Orphan process : a child get destroyed if it's parent got killed,like a process got started whose parent is 
+		                 shell,now once it got killed the child process will also get killed.
+						 to overcome this a process which is intentionally made orphan will be adopted by init.
+44> nohup  :			 nohup sh sample.sh &  //adopted by init,ignores the HUP (hangup) signal and keep running the command after user logged out. 
+45> pstree : shows process tree.
+46> pidof <program _name>  : list all the pid used by Process.
+                           * pidof -s <process_name>   // list only one process
+						   *  
+46> jobs -l  :: list the pid of jobs
+CTRL + z  : fg process to suspend
+bg  %id   : run that id in bg
+fg  %id   : run that id in fg
+46> setsid <command>  : the process will be owned by init,not by the shell. 
+                        it will keep running even you log out
+
+47> rev : Reverse the order of characters on each line of the specified files.
+48> rm   -r : removes recursively files.
+         -f : force fully.
+		 -v : verbose mode.
+		 
+49> rmdir 
+50> rmmod  : unload the loadable modules,it unloads only which are not in use and not refereed by other module.
+           rmmod module_name
+		   rmmod -v  module_name  // verbose mode
+		   rmmod -w  module_name  // wait till the time the module is not used,and disables it so no new process 
+		                             can use it.
+		   
+51> script : starts recording session,default file name is typescript,
+           makes a file on the very same directory for recording.
+		   ctrl+d or exit to exit the script.
+		   
+52> sdiff : Find differences between the two files.
+            sdiff [options] from to
+			Options :
+			-b : ignore spaces between words.
+			-B : ignore blank lines.
+			-i : ignore cases.
+			-s : suppress common lines.
+			
+		   
+52> sed 
+
+53> sha1sum : Compute or check 160-bit SHA1 checksums to verify file integrity.
+              sha1sum [file1] [file2]
+
+53> sort {file1} {file2} : arranges the records in particular order.
+         sort : sorts the data alphabetically without considering small.
+		 -u   : removes the duplicate.
+	     -n   : sort done numerically.
+		 -r   : reverses the order,descending
+		 -f   : ignore uppercase,lowercase differences.
+		 
+		 *In case of files containing multiple fields :
+		 AIX,25 
+         HPUX,100 
+         Linux,20 
+         Linux,25
+          
+		*sort -t','  -k1,2 {file} 
+		//k is key on upon which sorting will be done,also delimiter need not to given for "space and tab"
+		first it will sort on field 1 then 2
+        *sort -t"," -k2n,2 file  // sorting doing numerically.
+		here it sorts only on 2 field.
+		du -sm *|sort -n
+		
+54> split  : it splits a file into smaller files
+           split -l 2 {file}  //split the file with each file containing only 2 lines.
+		                      // by default it broke it into 1000 lines
+		                      // output files xaa xab xac
+		   split -l 3 {file} F  // output files Faa Fab
+		   split -b 10 {file} F  // each file contains 10 byte.
+		            -1k -1m    // each file size can be 1KB or 1MB
+		   split -n 2 {file} F   // divides file into 2 equal parts.
+		   
+55> startx
+
+56> tail  // prints last 10 lines
+            * tail -f   // follows a continuously running file.
+57> telnet host port : to check the remote host is listening on this port or not.
+                      //all communication was on plain text.
+					  
+58> top 
+us : cpu workload caused by processes run by normal users.
+sy : cpu workload caused by processes run by kernel.
+ni : number of processes that are running with a modified nice value.
+
+id : amount of time spent by CPU doing nothing.
+wa : amount of time, your cpu is waiting for I/O operations to complete.
+ha : hardware interrupts, becomes high when you have a higher disk usage, or higher network usage etc.
+si : interrupts created by software.
+st : relates to virtual machines running on your system
+1> type O (Capital for ordering)
+2) type c  // for complete path of command
+3> top -u abc  //as per user process
+4> top -p 1234 12356  // as per process id
+5> to show all the cores use 1
+6> top -n 2  // quit after 2 iteration
+7> top -b -n 1 > topusage // to run top in batch mode for 1 iteration.
+8> top -i   // displays only running process.
+9> 
+
+* virtual mem : all code + data + shared libraries + swapped out pages.
+* RES : CODE + DATA.
+* SHR : memory shared with other processes.
+* nDRT : no of pages which had gone changed in RAM,corresponding to pages in HDD.
+* WCHAN : name or address function of kernel where function is sleeping.
+* major Page Fault count : no of times disk access was done.
+* TIME : total CPU time used by task and any children.
+
+PAGING :  when portions of a process are written to virtual memory
+SWAPPING : When an entire process is transferred from RAM to virtual memory
+
+to get the actual load on system, divide the load/nproc output.
+vmstat 1 -S M  // Reports the virtual Memory stats in every 1 sec,Virt Mem = RAM + SWAP,memory in MB
+Procs |      Memory            |   swap   |  io    |  system  |      cpu
+r   b | swapd free buff cache  | si   so  | bi  bo | in   cs  | us  sys  id  wa
+
+r : no of process in runnable queue.
+b : no of process in blocked queue , Sleeping."waiting on hardware conditions to be able to complete. While in this state they cannot be interrupted."
+swapd : amt of Virtual Memory used in KB.
+free : amt of idle mem in KB.
+buff : amt of buff mem in KB,information from a process like permissions, file location, etc. are stored here.
+cache : amt of cache mem in KB,file data information for a process.
+si : amt of mem swapped in from Disk. KB/s to RAM.
+so : amt of mem swapped out to disk.  KB/s
+in : interrupts per second,a H/W or S/W signal to CPU to stop and give attention to request.
+cs : context switches per second,CPU stops and saves the state of process or vice-versa.
+bi : blocks read from HDD to RAM.
+bo : blocks out from RAM
+
+High Disk I/O  :  high values of wa and bi in vmstat.
+
+us : time spent in executing user code.
+sys : This represents system time.
+id  : idle state
+wa  : waiting for an I/O to get complete.
+
+
+A system with 2 to 3 process per processor is fine (means 2 to 3 process in run queue per processor core.). Which means for an 8 core processor 24 to 25 load average is acceptable.
+
+in multicore system ,to fetch details of each core: 
+mpstat -P ALL
+
+56> taskset  : Linux offers pre-emptive scheduling,result in context switching.now for long running process in 
+               multicore system process need to flush its cache,while moving from one core to another,this hampers the performance.
+			    taskset -c -p 6389  // lists the current affinity.,c -- cpu list
+				taskset -c 0,1 -p 6389  // sets the affinity to cores 0 and 1.
+				
+57> pidstat  : list the process doing context switches.
+             -w : list all the process of system.
+			 cswch/s :  number of voluntary context switches the task made per second.happen due to task requires a resource which is unavailable.
+			 nvcswch/s :  number  of  non voluntary context switches the task made per second,involuntary context switch takes place when a task executes for the duration of its time slice and then is forced to relinquish the processor.
+				
+59> touch :  touch -c -t YYDDHHMM {file}  // modifies the time stamp."c -- donot create file,which doesn't exist."
+60> tr [OPTION] SET1 [SET2] : translate tool.
+                            * if set1 and set2 both are there ,then set1 is changed to set2.
+	SET : [:alnum:],[:alpha:],[:cntrl:] all control chars,[:digit:],[:lower:],[:upper:],[:print:] all printable characters including space,[:space:] all horizontal or vertical space.
+    * tr a-z A-Z     // translates small to Big
+    thegeekstuff
+    THEGEEKSTUFF							
+	
+	grep "valid users" /etc/samba/smb.conf|tr ',' '\012'|sed "s/ TELENOR\\\//g"|grep -v "valid users"|while read LINE; do grep $LINE /etc/passwd; if [ $? -ne 0 ]; then echo $LINE not exist on server; fi; done|awk -F: '{print $1,$5}'
+
+	  
+	* echo "This is for testing" | tr [:space:] '\t'  // whitespace to tab
+	* echo "This   is   for testing" | tr -s [:space:] '\t'  //squeeze multiple space to 1 space and  
+	                                                           with single TAB.
+	*echo "the geek stuff" | tr -d 't'  // deletes the character t
+	* echo "my username is 432234" | tr -cd [:digit:] // complement the deletion of digit.
+	* tr -s '\n' ' ' < file.txt  > new.txt  // removes the new line with single space.
+	
+61> tty  : print the file name associated with current STDIN
+	
+61> uniq : Remove duplicate lines from a sorted file (as it compares only consecutive lines).
+          -c : print the count each duplicate was in file.
+		  -d : print only duplicate lines.
+		  -u : lines which appear only once.
+		  -i : case ignore
+		  -f : avoid first n fields for comparison.
+		  
+62> updatedb
+63> uptime  // how long the system has been running.
+64> w  // list the user who are logged in reads the file /var/run/utmp,and uptime
+    Load Averages : Load average is an indication of whether the system resources (mainly the CPU) are adequately available for the processes (system load) that are running, runnable or in uninterruptible sleep states during the previous n minutes.it also shows no. of running process
+             Running : a process which get the cpu.
+			 Runnable : process waiting to get CPU.
+uninterruptible sleep state: process waiting to get the resource,and cannot be interrupted will return 
+                            only it got the resource or it's got time out.(if gone sleep with Timeout).
+				ex: waiting for disk,Network I/O.
+				
+	Load describes : running + runnable + uninterruptible sleep state no of process.
+	
+	cat /proc/loadavg 
+	0.14 0.05 0.06 1/122 13870
+	1 process is in running state.
+	122 including the threads of all process are in either of 3 states.
+    13870   pid of last process
+	
+	Also load definition got different as per CPU in system : ,Also load on a system can be described as no of running or waiting process in a system.
+1 CPU : load of 2 means ,1 process is running continuously and second is waiting all the time.
+2 CPU : load of 2 means ,both processors were fully occupied,no waiting.
+4 CPU : load of 2 means ,2 processor were busy whereas 2 were idle.
+
+65> who am i  // shows the invoking/original user.
+66> whoami    // shows the current userid
+65> wall // to all users
+66> watch  : to monitor a command.
+           * watch -n .1 <command>    // in every 1/10 sec
+66> wc  :  * wc -l  // no of lines in file
+           * wc -w  // no of words in file
+		   * wc -c  // count of bytes
+		   * wc -m  // count of characters
+		  
+67> whereis :: it finds binary, source, and manual page  for a command.
+              whereis gcc   // binaray path , source path and  man path.
+			  -b : only binary path
+			  -m : only man pages
+			  -s : only source code.
+68> which  <command>  // which searches the user’s $PATH environment variable.
+69> time  :  time [options] command [arguments]    
+69> whatis  <command|function>		  // brief description of command or function
+
+whatis database consist command in following sections :
+1	Executable programs or shell commands
+2	System calls (functions provided by the kernel)
+3	Library calls (functions within program libraries)
+4	Special files (usually found in /dev)
+5	File formats and conventions eg /etc/passwd
+6	Games
+7	Miscellaneous (including macro packages and conventions), e.g. man(7), groff(7)
+8	System administration commands (usually only for root)
+9	Kernel routines [Non standard].
+
+70> apropos  <string> :   search the whatis Database for the string,on description of each command.
+70> write  <username> <tty_name>  // write user8 pts/13
+"message"
+EOF
+
+It's to remember all commands in linux do not support chaining,but they can be used via xargs 
+ps -ef|grep httpd|awk '{print $2}'|kill -9  // won't work
+ps -ef|grep httpd|awk '{print $2}'|xargs kill -9  // will work
+71> xargs :  use to avoid "Argument list too long" errors and by using xargs you send sub-list to any command which is shorter than "ARG_MAX" and that's how xargs avoid "Argument list too long" error
+            
+			 #getconf "ARG_MAX".find searches and does the execution if we have 1000 file then using xargs it will only find and remove all files at once shot.
+
+			 ls -lhrt | rm -rf  // case where args become too much for rm command at once
+			 ls -lhrt | xargs rm -rf 
+             ls -lhrt |grep -w 2010|awk '{print $9}'| xargs rm -rf  
+           * find / -name *.jpg -type f | xargs tar -cvzf images.tar.gz			  
+	// just place xargs command without the file.
+	                                     xargs <command-without-file>
+FIND AND GREP   * find . -name '*.c' | xargs grep 'stdlib.h' 
+                * find .  -name "l.txt" | xargs -r -I  {} cp -a {} test/
+		   {} is used when second command (cp) uses two arguments.
+		   -I  replaces  the first {} with second in cp command.
+                * find /tmp -name "*.tmp" -print0 | xargs -0 rm   // to remove file with spaces "a b.txt"
+
+* taking X session : http://neerajvasudeva.wordpress.com/2013/04/24/running-gui-via-putty/
+	
+                  SYSTEM CALL	
+* exit : terminate the current shell
+
+* ipcs  : each process have its own address space and user space.
+          Kernel has the access of whole memory.
+		  it allocates a segment of memory where two or more process can communicate with each other.
+		  they can also communicate via files but it requires high Disk I/O.
+		  
+		  a) Pipes : named pipes on different computer connected over network exchange messages
+		  b) Shared Memory : a common memory where read/write is done by process.
+		  c) Message Queue – It is a structured and ordered list of memory segments where processes store or retrieve data.
+		  d) Semaphores(lock): Provides a synchronizing mechanism for processes that are accessing the same resource.
+		  
+		  -a : displays all 
+		  -q : message queue.
+		  -s : list the semaphores.
+		  -m : list the shared memory.
+-m|-q|-s  -i <id> : Detailed information about an IPC facility 
+          -l : displays the limit of "Shared Memory Limits ,Semaphore Limits, Messages: Limits".
+-m|-q|-s  -c : creator userid and groupid and owner userid and group id.
+-m|-q|-s  -p : displays creator id, and process id which accessed the corresponding ipc facility very recently.
+-m|-q|-s  -t : displays last operation time in each ipc facility
+-m|-q|-s  -u : displays current usage for all the IPC facility
+
+* ipcrm : remove IPC objects , message queue, semaphore set or shared memory id.
+          deletion of message queue or semaphore object is immediate irrespective of any process hold  identifier.
+          shared memory object is only removed after all currently attached processes have detached
+        ipcrm <message queue | semaphore set | shared memory id>  <IPC ID> 
+		ipcrm   [-q msqid]      [-s semid]       [-m shmid] 
+		
+72> shutdown : *  Log reboot action including entering a shutdown record into the user accounting file called   /var/run/utmp and /var/log/wtmp 
+               *  Flush cache to disk.
+               *  Kill all process with a SIGTERM signal followed by a SIGKILL signal,exit gracefully.
+			   * /etc/init is called to perform the actual shutdown, which consists of placing the system in runlevel 1
+                 shutdown [OPTION]... TIME [MESSAGE]
+               * shutdown -r hh:mm "message"	// at specific time and reboot it
+			   * shutdown -r now          // immediate shutdown and reboot
+			   * shutdown -h hh:mm "message"   // halts the system
+			   * shutdown -h now
+			   * shutdown -P 5   //  insist system to power off once it’s brought down
+			   * poweroff        // halt and power off,
+			   * reboot   -p     // power off and restarts the machine
+			   * reboot          // graceful shutdown and restart of machine
+			   * reboot   -f     // forcefully restart the machine.
+			   * halt     -d     // power off and suppress writing /var/log/wtmp
+			   * 
+73>  rsync   : Remote sync,does copying and synchronizing files and directories.
+           Speed : it copies only the changed block/byte,avoiding complete transfer.        			   
+		   Security : Offers ssh transfer.
+		   less bandwidth : compression/decompression block by block at both ends.
+		                    so affective file size get reduced.
+		   Privileges : any user can execute it.
+		   
+		    rsync options source destination
+			
+			* rsync -zvr /var/opt/installation/inventory/ /root/temp   // z with compression,r recursive ,v verbose.
+			* rsync -azv /var/opt/installation/inventory/ /root/temp/  // a preserve mode,time stamp,permission
+			                                                              owner,group,links
+            * rsync -zar /local/dir user@remotehost:/remote/path     // copies to remote server.
+			* rsync -avz -e ssh thegeekstuff@192.168.200.10:/var/lib/rpm /root/temp  // synchronization of file 
+			                             Remote                           Local      using,SSH shell.rsh default
+		    * rsync -avzu thegeekstuff@192.168.200.10:/var/lib/rpm /root/temp  // u : do not overwrite a file at the destination, if it is modified) 
+			* rsync -avz --port=5895 --progress thegeekstuff@192.168.200.10:/var/lib/rpm/ /root/temp/  // shows progress meter.,connecting on a different port.
+			
+72> rsyslogd : Provides Local and remote logging functions.
+               it is based on sysklogd.adds support for logging over TCP, SSL, TLS, logging to databases.
+			   By default rsyslogd is command-line compatible with sysklogd and can be used as a drop-in replacement
+			   // conf file /etc/rsyslog.conf
+			   
+			   *.*;auth,authpriv.none          -/var/log/syslog
+         [facilities with no priority]        "-" means , Don't sync after every write to the file
+		 
+		 * Priorities can be: debug, info, notice, warning, err, crit, alert, emerg.
+		     listed in an ascending order            
+		*.=debug;auth,authpriv.none;news.none;mail.none     -/var/log/debug
+// Setting the priority of facilities to debug, *.= means "log only debug messages but nothing higher"
+		                                             *.  means "log everything"
+													 
+ *.=info;*.=notice;*.=warn;auth,authpriv.none;cron,daemon.none;mail,news.none          -/var/log/messages
+// Setting info,notice and warn priorities for these facilities
+
+                  authpriv.*                         /var/log/secure 
+				facility with all priorities will get logged in , <FACILITY>.<PRIORITY>
+73> runlevel  : prints the current runlevel.
+
+74> scp   :  Built-in with SSH command ,uses AES-128 to encrypt the files.
+             scp [options] source_file_name username@destination_host:destination_folder
+			 * -p  : preserve modification times, access times, and modes from original files.
+			 * -v  : verbose mode
+			 * -C  : compress on the go,helps in faster transmission.
+			 * -P 2249 : other than port 22.
+			 * -r  : copies directory.
+			 
+75> screen  :  helps while in dealing Multiple programs and for separating programs from the terminal shell.
+               /var/run/screen   // contains the screen lock
+               * screen        // opens the screen and connects you 
+			           “Ctrl-A” + “d“.  // detaches from current session.
+					   “Ctrl-A” + “H“   // all u write on attached screen will be (in users home) logs.
+					   “Ctrl-A” + “K“   // kills the screen
+					   ctrl+d  // also terminates the screen
+			   * screen -ls    // to list all the screens.
+               * screen -r screen-id [2675.pts-0.localhost]  // to reattach session.
+			   * screen -rx screen-id   // attaching an already attached screen.
+			   
+76> seq     : prints sequence 
+            seq [options] [first [increment]] last
+------------------------------------------------------------------------------------------------------			
+			TCP : Reliable way of communication.
+			UDP : unreliable,but fast.
+			
+			Socket  : IP address + Program Listening on Port
+			for a connection to get established something must be listening to that socket.
+			/etc/services contains the ports
+			
+			    CLIENT SOCKET                                 SERVER SOCKET
+			Client+[Source Port]                             Server+[Target Port]
+    client will let TCP select an unused port               Port Standard like,22
+	        number for the source
+			
+			IMAP uses TCP port 143; this means that an IMAP server will be listening for connections on port 143 on the server machine. To tunnel the IMAP connection through SSH, you need to pick a local port on home machine H (between 1024 and 65535) and forward it to the remote socket (S,143).
+			
+			
+------------------------------------------------------------------------------------------------------
+77> ssh     :  ssh [options] user@hostname [command]   // Secure SHell,client ssh command explained here.
+               
+			 * host key of the remote server will be cached and added to the users home dir : .ssh/known_hosts
+			 if SSH was upgraded or the server itself was upgraded,the host key of remote server will not match,and
+			 ssh will throw error.
+             * ssh user@remote-host "ls test"  //executes and return the result
+             * ssh -vvvvv user@remote-host         // Debugging mode.increased debugging
+             * ssh -p port user@hostname
+			 * ssh 192.168.228.130  'bash -s' < k  // Only way to allows you to pass arguments to the local script.
+              k is a shell script :
+			  #a=5
+              #echo $a
+			  
+			  
+			 * Generating a key :
+               ssh-keygen -t dsa|rsa    // 600  .ssh/id_dsa      private key. 
+                                           644  .ssh/id_dsa.pub  public key.	
+               .ssh/authorized_keys :      600   keeps Public key
+			   .ssh/known_hosts            644   automatic entry done by ssh,when new server get ssh.
+			   .ssh                        700
+             
+			 X Machine//client                         Y Machine	//Remote 
+        // this all done with reference to user_A 	at local and remote end.		 
+		1>	stores private key                       user have login account name : user_A
+		    we generate Public key for user_A and put in remote machine authorized_keys                                          
+									    	        
+		2>	ssh user_A@remote_machine            
+		
+		     * SSH Port Forwarding/Tunnelling, SSH can transparently encrypt another application's data stream.  
+			 Only for TCP Traffic,not for UDP Traffic
+			 Client App ==> SSH<-------------------------------------->SSH==>Server(App Server)
+			 Also Called TUNNELING : as other application traffic is tunnelled  through SSH Channel.
+			 
+			 first we need to enable at both side,
+			 AllowTcpForwarding yes   // in /etc/ssh/sshd_config
+			 
+			 ssh -L <local-port>:<Local Machine>:<Target Port> username@remote-host
+			 
+			 ssh -L 8888:localhost:23 192.168.0.106  //  will log you inside the target host
+			                                            equal to ssh remote server
+			 
+			 Local Port: Is the random port we selected (in our case its 8888)
+             Local Machine: Enter localhost here, because its your localsystem
+             Target Port: This is the target service port number, its 23, because we are tunneling telnet
+             Target Machine: This is the target server's IP address/Hostname
+			 
+			 -------------------------------------------------------------------------------------
+			 by default, only the host running the SSH client can connect to locally forwarded ports
+			 ssh listens only on the machine's loopback interface for connections to the forwarded port; that is, it binds the socket (localhost,2001), a.k.a. (127.0.0.1,2001)
+			 
+			 ssh1 -g -L<localport>:<remotehost>:<remoteport> hostname
+			 
+			 //by using -g ,disables this restriction, permitting any host to connect to locally forwarded ports.
+			 
+			 GatewayPorts yes  // in sshd_config 
+			 
+			 -------------------------------------------------------------------------------------			 
+			 
+			 In case you want to make tunnel only,for TRAFFIC FORWARDING.
+			 
+             ssh -N -f -L8888:localhost:23 192.168.0.106  // To make the Tunnel Only,no login
+             will also ask you a password,but wont login you in server,it will fork SSH both side.
+			 If you run "who" command (on the target server, after logging inside through telnet), it will show that you are logged in from "localhost", instead of your server IP address.
+			 
+			 this is called as Local Port forwarding,as The TARGET SERVER PORT is available via LOCAL PORT.
+			 
+			 * Remote Port Forwarding
+			 this is the case when you are logged on Remote Machine (With Reference to above Example),and want to make TUNNEL to LOCAL MACHINE.
+			 
+			 ssh -N -f -R 8888:192.168.0.106:23 192.168.0.105
+			         Remote-port:Server IP:Server LISTEN IP:    LOCAL MACHINE
+					 
+			 * Dynamic Port Forwarding  //to Bypass firewall rules and filtering.
+			 Situation : You are in firewall also which allows limited access.
+			             And you have a remote machine,SSH installed and STATIC IP.
+						 
+FROM firewall # ssh -D 6868 user@<remot-host>  // this ask to open a local-port 6868,which will forward 
+                                                 all requests to that port to the remote host .
+                your server at home has become a SOCKS proxy server.  SOCKS stands for Socket Secure. It acts like a Proxy server that will make TCP connection to any destination suggested by the client.
+
+                 In other words,remote host will act as PROXY,you send on localhost 6868
+                 SOCKS proxy server does not interpret the traffic that flows through it,so suitable for all TCP traffic through it,Provided that application using which you are sending traffic, knows SOCKS proxy.
+
+                 So if you are using a web browser, it knows how to send SOCKS messages to our SOCKS server. Firefox : Preferences ---> Advanced ---> Network ---> settings
+                 Select Manual Proxy : 
+                 SOCKS HOST : localhost  Port : 6868
+ 
+                 Once you save the settings and restart firefox, you will now be able to access all URL's using our newly configured SOCKS proxy server.
+
+                 Firefox will forward requests to localhost 6868 port, which will intern forward it to our remote home server through secure SSH tunnel.
+
+
+78> strace : strace shows you how data is passed between the program and the kernel,It shows the call name, given arguments, return value,and any generated error messages.
+
+                 * strace -c httpd   // Count system calls, errors, signals, and time and provide a summary 
+				                        report when the program has ended.
+				 * strace -o /path/of/output -p <pid>  // attaches to a process.
+				 * strace ls  // it traces how the program got executed.
+				 * strace -e open ls   // to select specific system call
+				   strace -t -e trace=open,read ls /home   // traces open and read system call,with time
+				   process : Trace all system calls which involve process management,fork,exec,wait.
+				   network : Trace all the network related system calls.
+				   signal  : Trace all signal related system calls.
+                   ipc     : Trace all IPC related system calls.
+                   read/open				   
+				 * strace -r -s 80 ls  // shows relative time,increased the string size to print,default 32.
+				 
+				  strace -Ff -e open service httpd start   // follow all forks.
+				  
+				  Locating Errors and Failures
+				                                                                  -1 shows error,which can be grep
+				  [pid 13748] open("/etc/selinux/config", O_RDONLY|O_LARGEFILE) = -1 ENOENT (No such file or dir)
+				   
+				   
+				   
+79>  su  :  creates the shell of another user , switch user
+            normal user $  su     // ask for root prompt
+                        #  su     // creates a new shell			
+				        $  su guest -c "date;ls"  // run the command from another user and logout from its shell.
+						
+						su vs su -  
+						//su keeps the environment variables as they were.
+						//su - ,changes the environment variable with new user.
+						
+80>  sudo  : offers more control,than to su command.provides root command without letting root password.
+            $ sudo "command"  // it ask for user pass,and execute only after checking the sudoers  file.
+			with the help of sudoers file,Administrator gives other user "ROOT commands" without letting them know 
+			the root password.
+			
+			A special group "wheel" exists on a RHEL system that is traditionally used for privileged activity. 
+			
+			$sudo -l    //user can print the commands which is "ALLOWED AND DISALLOWED" to him.
+			$sudo -L    //list all the parameters set in as default in sudoers file.
+			$sudo -k    //removes the password stored in sudo cache,will ask for password
+			//Once u successful login,sudo wont ask your password for next 5 min
+			$sudo -u ajay  // tries to be ajay
+			#sudo -V    // shows all settings of sudo command.
+			
+			All logging by default will be in /var/log/secure.  [largely decided by rsyslog, authpriv]
+			
+			can be also logged in other file :
+			Defaults logfile=/var/log/sudolog
+			
+				   
+            Sudoers file :
+			
+			User_name Machine_from_cmd_sudo_is_entered=(Effective_user) [NOPASSWD:] command1, command2, cmd3
+            
+			//if nopasswd is used no need of his own password,for cmd1 and cmd2
+			note : we ought to give full path of the command
+			
+			Executing command as if you were another user
+			peter ALL=(accounts) /bin/kill, /usr/bin/kill, /usr/bin/pkill
+			sudo -u accounts kill monthend
+			
+			Taking other users shell:
+			n       ALL=(a)         /bin/bash       //euid should be a
+			$ sudo -u a bash                        // this provides the shell of user a to user n,with n password
+			                                     NOTE : but you will be given the "environment variables of user n"
+												 to get the root variables you need to do # su -
+												 
+			the environment variable $PATH matters the most :
+			[root@localhost n]# echo $PATH
+            /sbin:/bin:/usr/sbin:/usr/bin
+			[root@localhost n]# su -
+            [root@localhost ~]# echo $PATH
+            /usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin
+
+81> sysctl  : examine and can modify kernel parameters at run time,using files under /proc/sys.
+            * sysctl –a  // displays all variables.
+			* sysctl -p  // after doing changes in /etc/sysctl.conf,it commit the changes.
+			* sysctl –w {variable-name=value}  // temporarily set values,lost after reboot.
+			                                   // to preserve them across reboot,put them in sysctl.conf
+			// /etc/rc.d/rc.sysinit script executes the sysctl command during boot process.
+			* 
+
+82> lsof  :  "List Open files" ,in Linux every thing is file.
+             
+			 COMMAND   : name of Process,also includes kernel threads.
+ 			 PID       : id of process.
+			 USER      : owner of process.
+			 FD        : its a structure in kernel ,contains all information of open file.
+			             process ---> (READ/WRITE) -- FD ---> SYSTEM CALL ---> ACTUAL FILE.
+			             cwd ,Current Working Directory, txt –  Text Segment or the Code Segment ,
+						 mem – Memory mapped file,  mmap – Memory mapped device.
+						 10u : file descriptor 10,open for read and write.
+						 rtd : root directory.
+			 TYPE      : REG – Regular File,DIR – Directory,FIFO – First In First Out,CHR – Character special file
+             DEVICE    : with which device we are working on. ( major,minor )
+			 SIZE/OFF  : file size.
+			 NODE NAME : Inode number.
+			 
+			 * lsof -d <number>  //list all process,holding certain file dEscriptor.
+			 * lsof -c httpd   // list all files opened by "command starting with string " <httpd>.
+			 * lsof /var/log/httpd/access_log  // what process are accessing this file.
+			 * lsof +D /var/log/    // list all process accessing this directory.
+			 * lsof /dev/sdb   // list all the process who are accessing this disk
+			                      useful in case of unmounting.
+			 * lsof -u <username>   // list all process owned by specific user.
+			 * lsof -p <pid>   // list of open files,by this pid.
+			 * lsof -i    // list all internet sockets
+			 * lsof -i tcp/udp  // list only TCP/UDP
+			 * lsof -i tcp:22   // list all files listening to port 22.
+			 * lsof -i@172.16.12.5 //connections open to a network/host.
+			 * lsof -i TCP:1-1024  //list all port opened for this range.
+             
+
+  
+83> pgrep <process_name>:  search for processes by name and returns their Process ID of all instance.
+81> wget      :  wget utility which retrieves files from Web using widely used protocols like HTTP, HTTPS and FTP.
+                 * wget http://ftp.gnu.org/gnu/wget/wget-1.5.3.tar.gz
+				 * wget -O new.zip http://ftp.gnu.org/gnu/wget/wget-1.5.3.tar.gz //saving with another name.
+				 * wget file1_URL file2_URL
+				 * wget -i /wget/tmp.txt    // file containing URLS to read and download them One-by-One.
+				 * wget -c http://file      // can resumes the incomplete download,works only with those servers
+				                               who support RANGE header.
+				 * wget -b --keep-session-cookies http://file      // download in background,with cookies
+				 * wget --http-user=narad --http-password=password http://file   // accessing password protected 
+				 * wget --ftp-user=narad --ftp-password=password ftp://ftp.iinet.DVD-1.iso   // FTP 
+				 * wget -r -l1 http://www.yahoo.com   // first layer of yahoo links,l0 for complete
+				 * wget -S http://www.lycos.com     // showing the original Server headers.
+				 * wget -rk  http://abc.com   // enables recursive mode,and option k converts links in downloaded resources to point to the locally downloaded files.
+				 * wget -e robots=off -r  http://abc.com  //do not follow the robot.txt file
+				 * wget --spider  http://abc.com   //only check URL is valid or not.
+				 
+				
+82> tcpdump  :   a command line Packet Analyzer which capture or filter TCP/IP packets sent/received on Interface.
+                 tcpdump works in network layer , A N/W packet header consist of 
+				 Sender,Destination,State Information and Other Flag Informations.
+				 TCPDUMP only captures the first 96bytes of data from the packet by default.
+                 * tcpdump -i -q -n eth0    // analyzes interface,and disables the DNSlookup,q for quick less info
+				 * tcpdump -s0 -n -i eth0  // this captures the whole packet,s0 makes no limit
+				 * tcpdump -c 5 -i eth0  // captures only 5 packets
+				 * tcpdump -D   // Display available interfaces.
+				 * tcpdump -w 0001.pcap -i eth0  // save the packets in pcap format
+				 * tcpdump -r 0001.pcap   // this reads the saved packets.
+				 * tcpdump -i eth0 tcp   // captures only TCP packets,same for icmp,udp,arp
+				 * tcpdump -i eth0 port 22  // Capture Packet from Specific Port.
+				 * tcpdump -i eth0 src 192.168.0.2  // Capture Packets from specific host/IP
+                 * tcpdump -i eth0 dst 50.116.66.139  //  Capture Packets from destination IP
+				 * tcpdump -i eth0 dst 192.168.228.130  and port 22  // options can be AND
+                 * tcpdump -w g_1024.pcap greater/less 1024  // captures only those packet whose size > 1024 bytes.
+				 * sudo /usr/sbin/tcpdump -w /tmp/NWF04.pcap 'port 8080'
+
+84> nmap     :   an open source tool ,Network Mapper.
+                 nmap [Scan Type(s)] [Options] {target specification}
+				 
+				 * nmap <host_name / IP>  // list all open ports,service and MAC address.
+				 * nmap <host_name / IP>   // in verbose mode.
+				 * nmap 192.168.0.*    // scan a whole network.
+				 * nmap -iL nmaptest.txt  //scans all listed IP address in the file.
+				 * nmap 192.168.0.101-110  // scans IP address range.
+				 * nmap -sP 192.168.0.*   // scans which hosts are up and alive.
+				 * nmap --iflist      // host and route info.
+				 * nmap -p1-80  host       // scans a specific or range of  ports
+				 * nmap –sT hostname   // scan for TCP ports.
+				 * nmap –sU hostname   // scan for UDP ports.
+				 * nmap -sP 192.168.1.34   // ping scan
+				 * nmap –PR 192.168.1.3    // arp scan,usefull if ping is blocked
+                 * nmap -O –-osscan-guess 192.168.1.3  // which OS it is.
+                 * 				 
+              
+             
+88> oprofile  // provided by oprofile.x86_64
+               http://www.dedoimedo.com/computers/oprofile.html
+84> whois <domain_nmae> :   Search a whois database for a domain name, IP address, or NIC name.
+
+84> tee :  basic usage write STDIN to STDOUT and a file
+            * grep pattern Fab |tee lopdsgbwj   // prints the output and write it into file.
+			*                                   here output to STDOUT and to file.
+			* tee -a   // to append to files.
+
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                                         SOFTWARE MANAGEMENT
+	
+Always 	remember,the package version is very critical while deploying on server.and
+Usually when you use make install, there is no good way to uninstall. This is why it's often advisable to use the --prefix option to the configure script to specify a special directory for each application that's installed in this way.
+make uninstall // provided by very less tar balls.
+make -n install // list the steps which "make install" does ,without doing them.
+
+second method :
+find /* > packgetlist.b4  //  list of all files on the system before installing software
+//install the software
+find /* > packagelist.after  // list the files now 
+diff packagelist.b4 packagelist.after > package.uninstall.list 
+for i in $(grep ">" package.uninstall.list | awk '{ print $2 }')
+do
+/bin/rm -fi $i
+done
+	REDHAT  : YUM , A frontend  Application to manage s/w.
+	DEBIAN  : apt,aptitude and synaptic 
+	
+	PACKAGE : A file containing the files to install the software.
+	DEPENDENCIES : a package might require some files/packages or a particular version of a file/package.
+	
+	MD5 Checksum : checks the integrity of package,downloaded correctly and not tampered.
+	GPG/PGP   : to verify the owner of package,digital signature.
+	
+	NAMING : 
+	package-version-release.architecture.rpm   // release no. for that particular version of package
+	                        i386,amd64,noarch : not H/W specific.
+							src : source package
+							
+		 Platform                                      Architectures 
+	   * Intel-compatible 32-bit                       i386, i486, i586, i686, athlon, geode, pentium3, pentium4.
+	   * i586                                        Sometimes used when building kernels for older x86 processors
+	   * Intel-compatible 64-bit                       x86_64, amd64.AMD Athlon64, AMD Opteron, and Intel EM64T.
+	   * ia64                                           Intel® Itanium                                      
+	   * Intel Itanium                                 ia64
+       * HPAlpha                                       alpha*
+       * Sparc/Ultra Sparc (Sun)                       sparc*
+       * Power PC                                      ppc*32-bit IBM,BM eServer,pSeries, and IBM eServer iSeries
+       * Platform independent                          noarch
+
+	    be aware that more recent architectures typically run software that targets older architectures within the same family.the reverse, however, is not true. For example, within the 32-bit Intel-compatible architectures, a 686-class (Pentium II / III / IV) machine runs files within i386, i486, i586, and i686 RPM package files, but a 386-class (80386) machine runs files within i386 RPM package files only
+         	   
+	
+	package_version-revision_architecture.deb   
+	
+	* When a package is updated,old files are backed up (conf files) ,this ensures we can remove the newer s/w.
+	
+	PACKAGE MANAGERS :
+	a) apt : for debian based system,it downloads and installs the packages
+	         some version are available for rpm
+    b) dpkg : debian based.
+	c) synaptic : graphical tool for apt.
+	d) yum : frontend to rpm command for RED HAT Systems.
+	
+	
+	YUM  : derived from yup,made for Yellow-Dog-Linux,rpm based Linux
+	       * it downloads the information of "Packages Headers" from REPOSITORY and then decide what to do .
+		   * REPOSITORY : "Packages" and "Packages Headers".
+		   * we can configure yum to use multiple repositories.
+		   * yum saves packages and package headers in /var/cache/yum 
+		   * conf file :  /etc/yum.conf
+		                    [MAIN]
+			sets configuration defaults for yum operation
+			               [SERVER]    // can be stored in /etc/yum.repos.d
+			each server is named according to the repository it specifies
+			
+			exactarch : if true,then won't UPDATE i686 package with i386.
+			exclude= p1 p2 p3  //this excludes package from updation.
+			installonly_limit :  representing the maximum number of versions that can be installed simultaneously for any single package.
+			$releasever=/etc/redhat-release.
+			$arch=i586, i686 and x86_64.
+			$basearch=You can use $basearch to reference the base architecture of the system.
+			            i686 and i586 machines both have a base architecture of i386
+						 AMD64 and Intel64 machines have a base architecture of x86_64.
+			baseurl : Must be a URL that points to the directory where the yum 'repodata' is
+			mirrorlist : It specifies a URL that points to a file containing a list of baseurls.
+			enabled   : if we don't have this field in definition of repo,it means it is enabled.
+			gpgcheck : tells yum whether or not to perform a GPG signature verification on packages obtained from this repository.
+			gpgkey  : A URL that points to a file containing ASCII GPG key for the repository.
+			          /etc/pki/rpm-gpg/
+					  
+		    to list the configuration of yum : yum-config-manager
+			
+		   * yum starts with updating the cache first,then perform the requested operation.
+           * yum [Options] [Command] [package1 package2 ...]		   
+		   Options :
+		   -c : path to new configuration file,other than /etc/yum.conf
+		   -C : do not update the Package headers,unless required to complete the COMMAND.
+		        run entirely from cache.
+		   --disableplugin=plugin1,plugin2  : run without these plugins.
+		   --disablerepo=repoid  : disables the repo,which is marked as "enable=1"
+		   --enablerepo=repoid   : enables the repo,which is marked as "enable=0",and download the package from same.
+		   --nogpgcheck  : disables GPG checking.
+		   --noplugins  : disables all plugins.
+		   --showduplicates : works for "info,list,search COMMANDS", show all matching packages and versions of package.
+            -v  : verbose ,mode		   
+           -y  : assumes yes for all prompt during erase/install.
+++++++++++++++++		   
+		   YUM COMMANDS :  easily handles the kernel upgrade.
+		   
+		   a) check : Check for problems in the rpmdb
+		   b) check-update : checks if update is available.
+           c) clean [ options] : clean up yum cache directory.  /var/cache/yum
+                    all : removes cached packages,headers,Db,metadata and cache.
+                   dbcache : removes the sqlite database cache.
+                   headers : removing all header files.
+                  metadata : removes the metadata files,which contains info of  
+				              packages name,size,mirrorlist.txt,repomd.xml and cachecookie
+                  packages : removes the packages from package folder.
+                  
+		   d) deplist <p1> : generates list of dependencies for package 
+		   e) downgrade <p1>  : downgrade a package
+           f) groupinfo "<group>" : 	 Display details about a package group	
+           g) groupinstall "<group>" : 				  
+		   h) groupupdate "<group>" : 
+		   i) grouplist    : list the groups available and installed.
+		   j) groupremove  "<group>" : removes the group.
+           k) help <command>  
+           l) info <packages> : Arch,Version,Release,Size,Repo,Summary,License,Description.info of both types
+           m) install <packages>  : installs the package.
+           n) list [options] [packages] : abrt-addon\* or \*plugin\*
+                         all  : list all installed or available packages.
+                   available  : available package in repository for installation.
+					  extras  : list packages which are not available in any repository.
+				   installed  : list installed packages.
+					 updates  : list packages whose update is available.
+					 
+		   o) makecache  : download and cache the metadata files from repository.afterwards you can use -C to run "check-update, info, list, provides,and search" that uses the metadata.
+				  
+				  we have 3 sqlite db,to provide info :
+				  a) primary 
+				  b) file_lists and other : METADATA files
+				  
+		   p) provides feature1* : list packages which provides the specified feature.
+				                       yum provides "/etc/httpd/*"
+
+		   q) reinstall  : reinstalls the already installed package of same version.
+		   r) remove/erase : removes the installed package and also those who depend on it.
+		   s) repolist [all]: list the configured repos,also the disabled ones
+				             repo id ,repo name , status <no of packages>
+		   t) resolvedep dep1 : list the packages which provides specific dependency.
+		   u) search string  : list the packages where matching string is found.
+		   v) update [package] : updates all packages if no package is specified.
+				  
++++++++++++++++++++++++				                                  
+				  Plugins : python programs to extend the functionality of yum
+				            
+							pluginpath=/etc/yum/pluginconf.d/  //all confs of plugins
+							
+							yum provides "/usr/lib/yum-plugins/*"  // list available plugins on server
+							one set of collection of such plugins is : yum-utils 
+							which provides following  plugins in the form of command 
+							
+				a) package-cleanup	: find problems in the rpmdb of system and correct them.			
+					         --problems : List dependency problems in the local RPM database.
+							 --orphans  : List installed packages which are not available from
+                                          currently configured repositories
+							 --dupes     : scans for duplicates in rpmdb.
+							 --cleandupes : scan for duplicates in rpmdb and remove older 
+				 b) yumdownloader  [option] [package1> : download required packages.
+                           --destdir=DESTDIR  //default is current directory				 
+						   --resolve       // resolve dependencies and download required packages
+				
+				  c) security : Discovering information about and applying security updates easily.
+	
+++++++++++++++++++++++++++++      
+          RPM  Unleashed // The REDHAT PACKAGE MANAGER.
+
+* RPM is the only way to install packages under Linux systems, if you’ve installed packages using source code, then rpm won’t manage it.	
+* RPM is free and released under GPL (General Public License).	  
+* freely available packaging system for software distribution and installation.
+* SUSE,Mandriva and  Fedora Distributions use rpm.
+
+for installation using source package,here is quick fix to make the package for your system:
+1> download the package to install.
+2> ./configure --options
+3> make
+4> download "checkinstall" from rpm.pbone or http://www.asic-linux.com.mx/~izto/checkinstall/download.php
+5> will need rpm-build package
+6> then do   mkdir -p /root/rpmbuild/SOURCES and install the checkinstall package
+7> then do ::  checkinstall --nodoc --install=yes -y
+8> this will create the package which you can install and remove via rpm.
+
+// "It Uses installwatch to keep track of all files created or modified during the run of an installation script like "make install". The information is used to create a rpm package that holds all files installed by the
+tracked installation.
+
+* An RPM package has three primary components : 
+     header :  Contains all the info of package : name,version,description,included files,copyright terms 
+               and from where source file can be found.
+  signature :  Information used to verify the integrity and authenticity of the package.
+   archive  :  Actual files which makes the package.
+   
+   package.spec : file found in src rpm,contains info description of S/W,instruction to rpmbuild how to build the 
+                  package,and a list of files where they get installed and changelog.
+				  
+				  SPEC file components :
+				  a) Macros : sequences of commands stored together and executed by invoking the macro name
+                    		  %setup : unpack the original sources.
+                              %patch : apply patches.
+                  b) Scripts : controls the build process.
+				               %prep : begin the build process.
+							   %build : primarily to run make and perhaps do some configuration.
+							   %install : to do a make install.
+							   %clean : clean up afterwards.
+							   
+							   Additional :
+							   %pre : for scripts run before package installation.
+							   %post : for scripts run after package installation.
+							   %preun : for scripts run before a package is uninstalled.
+							   %postun : for scripts run after a package is uninstalled.
+				  c) Trigger Scriptlets : a course of action which involves interaction between package
+				                a newly installed RPM package may cause an existing application to run or restart once installation is complete.
+				  
+				  rpm [options] [packages]
+				  
+* when RPM installs the package it "Checks the system compatibility with software","checks the Dependency","Checks for Conflicts,installing older version","Figures where to install the files","Installs them in system with proper permission and ownership","Deciding what to do with config files","And adds info into it's DB".
+* Patch : it's the difference of source code and enough contextual information that a program can locate where the changes are to take place.
+
+* RPM Advantages :
+a) Ease of Use : with single command one can install/remove the package
+                 while manual installation and removal requires lot of efforts.
+b) Package upgradability : removal of old files with new files. RPM takes care to preserve any customizations 
+                           that have been made to that application.
+						   RPM speaks largely over "customizations  of CONFIG".
+c) Package interdependencies : Software applications often have interdependencies; some application only works when
+                               other applications are installed.
+d) Query capabilities : rpm maintains a DB consisting info of packages,installed on system.
+e) Package verification : it keeps permission,ownership,and size of each file of every package.this allows the 
+                          users to check status/permission of application.
+f) Multiple architectures : packaging is done for every platform.
+g) Pristine sources : Red Hat developed a package system that produced two types of packages: binary and source
+                      Binary packages :  are compiled software that can be installed and used.
+					  Source packages :  contain the source code for that software, along with a file documenting how that source code must be compiled to produce that binary package.
+
+* global configuration option : /usr/lib/rpm/rpmrc
+* rpm DB is at /var/lib/rpm
+  Packages : is important file ,db files are lock files.
+* rpm --showrc   // list the variables.
+compatible archs : list the package type ,which can be installed.
+
+* rpm -ivh <package>   // i :- install ,vv :- verbose,h :- progress meter.allows you to install multiple 
+                                                                    instances of the same (identical) package
+* rpm -i --test <package>  // dependency and conflict check.
+* rpm -Uvh <package>   // remove all other versions of a package.RPM automatically un-installs existing versions of the package before installing the new one
+* rpm -ivh --prefix /tmp/abc <package>  // install in different directory.
+
+
+* rpm -ivh --replcaepkgs <package>  // replaces already installed s/w.
+* rpm -ivh --replacefiles <package> // to overwrite files owned by a another package.
+* rpm -ivh --oldpackage  <package> // to install an older version of a package on top of a more recent one.
+* rpm -ivh --nodeps  <package>    // to skip the dependencies check and install anyway.
+* rpm -ivh --ignorearch  <package> // to ignore the architecture of the package and install the package.
+* rpm -ivh --nodigest   <package> // to skip the test of the digest
+* rpm -ivh --nosignature   <package> // skip the PGP check.
+* rpm -evh <package>  // when removing the package,system checks whether Any other s/w depends on this package.  
+rpm -ev --nodeps vsftpd // Remove an RPM Package Without Dependencies
+ --nopre	         Skip pre-installation scripts.
+ --nopost	         Skip post-installation scripts.
+ --nopreun	         Skip pre-uninstallation scripts.
+ --nopostun	         Skip post-uninstallation scripts.
+ --noscripts	     Skip all the scripts.
+				  
+		Smart Upgrade :   
+*RPM keeps track of each file it installs in DB of a package with it's CHECKSUM
+*it keeps three version to decide 
+ checksum of old file : checksum of current file on disk : checksum of new file 
+       X                            Y                               Z
+	   
+	   if X = Y  (Z replaces Y,as Y is unchanged).
+	      X = Z  ,file is same across the version ,but Y got changed   ( Y will replace Z)
+		  X != Y != Z ,file is not same across the version,and Y also got changed.
+		               Z will be new config file and Y will be saved with Y.rpmsave
+					   
+* Signature-check options : RPM packages may have a GPG signature built into them,RPM now automatically checks the signature of any package when it is read.
+
+There are three types of digital signature options: 
+
+you can check signatures,  rpm --checksig [options] package_file...
+add signatures to packages, rpm --addsign binary-pkgfile... //generate and insert new signatures, replacing any that already exist in the specified binary packages.
+and import signatures. rpm --import public-key  //used to import an ASCII public key to the RPM database
+so that digital signatures for packages using that key can be verified
+
+++++++++++++++++ Using the RPM Database
+
+* rpm -qa <package>  | grep ssh  // queries all packages.
+* rpm -qa "kernel*"
+* rpm -qf /usr/bin/ssh   // which package owns this file.
+* rpm -qi <package_name>  // info of package.
+* rpm -qg "System Environment/Shells"  // list all the packages of a group.
+* rpm –qlv <package>  // list all the files of a package.
+       -c : list the config files.
+       -d : list the documentation files.
+       -s : state of files in a package.it can be used with c or d option.
+	   
+	   State	Usage
+       normal	The file has been installed.
+not installed	The file from the package is not installed.
+     replaced	The file has been replaced.
+	
+* rpm -q --scripts <package_name>	// list the scripts
+* rpm -q --changelog <package_name>  // lists the changelog.
+* rpm -qa --last  |head  // list the packages installed most recently.
+* rpm -qlp <package>.rpm  // lists the files in package.
+
+
+* Verification of packages : this also reports missing dependency of installed softwares.
+     * rpm -V verify_options package_name  // if all okay,won't print any message.
+	 * rpm -Va     // checks the entire system
+S	File size differs.
+M	File mode differs.
+5	The MD5 checksum differs.
+D	The major and minor version nnsumbers differ on a device file.
+L	A mismatch occurs in a link.
+U	The file ownership differs.
+G	The file group owner differs.
+T	The file time (mtime) differs.
+
+Custom Query ::
+* rpm -qa --queryformat  "%{tag_name}"
+rpm -qa --qf "%-20{NAME} %40{PLATFORM}\n"
+
+* list the query tags :  rpm --querytags
+NAME	Package name
+VERSION	Version number
+RELEASE	Release number
+SUMMARY	One-line summary of the package contents
+DESCRIPTION	Descriptive text about the package
+BUILDTIME	Time package was built
+BUILDHOST	Host package was built on
+SIZE	Size of all the regular files in the payload
+LICENSE	License package was released under
+GROUP	Descriptive group or category name for the package
+OS	Operating system package was built for
+ARCH	Architecture, such as i386
+SOURCERPM	The associated source RPM
+INSTALLTIME:date   date time of installation time
+CHANGELOGTIME	Array of changelog times
+CHANGELOGNAME	Array of changelog names
+CHANGELOGTEXT	Array of changelog text entries
+PREIN	Pre-install script
+POSTIN	Post-install script
+PREUN	Pre-uninstall script
+POSTUN	Post uninstall script
+PLATFORM	Platform	   
+		   
+* Rebuilding the RPM database 
+step1--> Backing up the RPM database 
+tar cf rpmdb.tar /var/lib/rpm
+step2 --> rpm --rebuilddb     // This command rebuilds the RPM database from the installed packages,Only the Packages file is required. All the other files can be recreated from the Packages file.
+
+       If all fails,we can create the new RPM database :
+	   
+	    rpm --initdb --dbpath /tmp/rpm
+
++++++++++++++++++Understanding the Dependency 
+* Package Dependency : occurs when one package depends on another
+     You might think it would make for an easier-to-manage system if no package depended on any others, but you’d face a few problems, not the least of which would be dramatically increased disk usage.
+* Capability Dependency : names a file or a package. But the capability can be any arbitrary text string.it get installed in RPM database at installation time.
+     Package dependencies and capabilities are very important when creating spec files for building your own RPM packages.
+     Many capabilities that packages require are system libraries, especially shared libraries.
+* Version Dependencies : An application may depend on a capability provided by another package.It may also depend on the capability that a specific version of another package provides.
+* Conflicts : Some packages may provide capabilities that interfere with those in other packages.Installing conflicting packages is an error.
+       httpd package (the Apache Web server) conflicts with the thttpd package. Both packages want to provide the primary Web server for a system
+* Obsoletes : This refers to a capability that a package provides that makes another capability obsolete.
+              a new version of the perl interpreter may make an older version obsolete.
+			  
+	Summary :This brings the total to four types of dependencies that the RPM system tracks.
+a) Requires : which tracks the capabilities a package requires
+b) Provides : which tracks the capabilities a package provides for other packages
+c) Conflicts : which describes the capabilities that if installed, conflict with capabilities in a package
+d) Obsoletes : which describes the capabilities that this package will make obsolete.
+
+    Note :  A Package describes above all features.
+		 
+		 How these can be checked in RPM Database and with an rpm file.
+*  rpm -q[p] --requires  <package>[.rpm]   // capabilities required by this package.
+*  rpm -q[p] --provides  <package>[.rpm]   // capabilities provided by this package.
+*  rpm -q[p] --conflicts <package>[.rpm]   // what conflicts with given package.it suggest what normally you cannot
+                                             install normally.
+*  rpm –q  --whatrequires capability  // which package requires this capability.
+*  rpm –q  --whatprovides capability  // which package provides this capability.
+
+		 
+ Triggers : a script that gets run when a package is installed or uninstalled.Triggers allow packages that depend on other packages to properly configure themselves when those other packages are installed or removed.
+
+ * rpm -q[p] --triggers <package>[.rpm]
+ 
+ Finding RPM :
+http://rpmfind.net
+http://www.redhat.com
+http://freshrpms.net/
+http://rpm.pbone.net/
+	
+* to show RPM package dependencies is to use rpmreaper tool.
+yum install rpmreaper  // from EPEL repo
+Press "r" on a highlighted package to show its dependencies. You can expand the whole dependency tree by recursively pressing "r" keys on individual dependent packages. The "L" flag indicates that a given package is a "leaf", meaning that no other package depends on this package. The "o" flag implies that a given package is in the middle of dependency chain. Pressing "b" on such a package will show you what other packages require the highlighted package.	
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+proc file system :: an interface to access kernel Data Structure.procps  package provides tools to get info.
+                    a pseudo filesystem created and stored in RAM.
+http://www.slashroot.in/proc-file-system-linux-explained
+it contain dir=pid
+a) cmdline : complete command line for the process .
+b) environ  : environment variables need by process.
+c) exe  : link pointing to binary of process.
+d) fd directory : containing one entry for each file which process has open,named by no.
+                  0 : input file
+				  1 : output file
+				  2 : std. output error.
+e) maps : memory space , permission rwx s : shared, p : private.
+f) status contains all the detail of process
+g) ls -l /proc/*/cwd  and ls -l /proc/*/fd 
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                                    USER HANDLING SECTION
+									
+1> adduser  --> useradd   : useradd -D  // displays all the default settings except the groupid. 
+             GROUP=100     ,not taken as default
+              HOME=/home
+          INACTIVE=-1      ,disable the feature of "disabling the account",once password got expired.a positive
+                            value means account will be disabled after given no. of days		  
+            EXPIRE=          date on which account will be disabled.
+             SHELL=/bin/sh    user login shell
+              SKEL=/etc/skel  content of this dir will be copied
+ CREATE_MAIL_SPOOL=no         create or not create the mail spool.
+ 
+             * it also reads /etc/login.defs to set various parameters of a new user.
+			 * useradd -D -s /bin/ksh     // changes the default parameter.
+			 * useradd -s <SHELL> -m -d <HomeDir> -c "COMMENT" -g <Group_name or no of user> UserName
+               -m :: Create user’s home directory if it does not exist.
+			 * useradd -u <id>  login_name
+             * useradd -G admins,webadmin,developers login_name. //setting the secondary groups.u hv to mention all
+			 * usermod -a <group_name> login  // appends the group,not to mention previous ones.
+             * useradd -g 500 login_name  // setting the primary group
+			 * useradd -M login_name  // donot create the user home dir.
+			 * usermod -l <newlogin_name> login_name  // changes the login name.
+			 * usermod –g developer test // changes the primary group of test.
+			 * userdel -r login_name // deletes user home directory also.
+			 * userdel -f login_name // deletes the user and all bullshit even it is logged in.
+			 * passwd -d <login_name>  // deletes the password,hence password less login.
+			 
+               /etc/skel				
+			   /etc/passwd
+	           username:pass:UID:GID(primary group):comment:home_dir:shell
+			 
+			   /etc/group 
+			   group_name:group_pass:GID:username list
+			   
+			 * id <username>   // displays UID,primary group and secondary groups to which user belongs
+			 
+			   /etc/shadow
+			   login_name:encrypted_pass:lastchange password:minimum:maximum:warn:inactive:expire_info
+			   * all date time are mentioned with reference to 1 Jan 1970.                           
+			   * lastchange : date on which password was last changed.
+               * minimum :  minimum number of days required between password changes,wrf. to lastchange field.
+               * maximum :  maximum number of days the password is valid,wrf. to lastchange field.
+               * warn : days before user get warned for his password get expired.
+               * inactive : The number of days after password expires that account is disabled.
+               * expire_info :  days since Jan 1, 1970 that account will be disabled.
+			  
+			 * chage : change age
+			         chage -l login_name  //displays the account info
+					 chage -d 2014-08-20 login_name  // sets the last password change date
+					 chage -M 10 login_name // updates “Password expires” and “Maximum number of days between password change” with reference to "lastchange password" 
+		             chage -W 2 new3      // get warning days before password expiration.
+					 after an account get expired user is forced to change his password ,and system will prompt till the account got Inactive
+					 chage -I 10 dinesh  //after 10 days user password will be inactive/locked and only root can do.
+	                 chage -E "2009-05-31" login_name // to change the ACCOUNT expiration date.
+					 chage -m 5 login_name  // changes the min no. of days between pass change.
+					 
+					 Last password change					: Aug 05, 2014 // REFERRENCE FOR ALL
+                         Password expires					: Aug 15, 2014 // REFERRENCE "Last password change"
+                        Password inactive					: Aug 25, 2014 // REFERRENCE "Password expires"
+                       Account expires						: Aug 20, 2014
+         Minimum number of days between password change		: 0
+         Maximum number of days between password change		: 10  // Reference to Password Expires
+       Number of days of warning before password expires	: 2   // Refer to  Password expires
+
+				* disable password ageing :
+                      chage -m 0 -M 99999 -I -1 -E -1 dinesh	
+
+2> chfn  <login_name> :   changes information stored in passwd and displayed to finger	
+3> groupadd -g id <group_name>  // adds the group into /etc/group,assigns the id
+4> groupdel <group_name>  // deletes the group 
+5> groupmod -g id <group_name> 
+            -n new_name  old_name
+6> groups  <username>  // shows the group to which user belongs
+7> id  <username>  // list the info
+      * id  -g  <username> // shows the primary group id
+	  * id  -G  <username> // shows the secondary groups 
+7> grpck  [/etc/group|/etc/gshadow]   // checks the duplicacy and corrupt entries  of groups
+8> pwck   [/etc/passwd|/etc/gshadow]  // checks the duplicacy and corrupt entries of users.
+                      it ask for yes/no before deleting the entry.
+				  
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                           NETWORK HANDLING  http://linux-ip.net/html/index.html
+						                    http://www.cs.montana.edu/courses/309/topics/8-tcpip/outline.html
+		Application Layer
+        Host-to Host Transport Layer
+        IP Layer
+        Network Access Layer
+Masquerading : Presenting single IP to outside world ,with the help of firewall.
+iptables : iptables is a netfiler to implement IP firewalling and Masquerading 
+		
+DAEMON  : Server process running in background continuously.
+          named : resolves IP to domain name.
+		  cupsd : send documents to printer.
+1> arp : Address resolution protocol,map an IP network address to a corresponding hardware MAC address.
+        * When host X wants to communicate host Y, X first broadcasts an ARP request on its local network,
+        * to obtain Y's MAC address. 
+		* Once X receives ARP reply containing Y's MAC address
+        * X uses the information to construct Ethernet frames destined for Y.
+		* The IP/MAC address mapping information so obtained is cached in local ARP table,to avoid query process.
+		* it dumps /proc/net/arp
+        
+     * arp -a	Address     HWtype       HWaddress           Flags Mask             Iface
+                10.0.2.2    ether    52:54:00:12:35:02            C                  eth0
+     * arp -s 10.0.0.2 00:0c:29:c0:94:bf -i eth1 // adds the address in cache,which will be lost after reboot.
+	         making it persistent across reboots add it in file "/etc/ethers"  
+                                                             00:0c:29:c0:94:bf 10.0.0.2   						
+	 * arp -f /etc/ethers  // to read from file and adds them      
+	 * arp -a -n   // shows all the entries (PERM added manually into table)
+	 * arp -d 10.0.0.2  // deletes the entry from cache
+	 
+	 # To identify the host in network assigned the same IP address.
+	    * arp-scan external tool to list the hosts with IP and MAC
+		* arp-scan -I eth0 -l
+		
+	 # To identify the DHCP in network
+	   grep -R "DHCPOFFER" /var/log/messages
+	   
+	 # To identify location of IP 
+	    curl ipinfo.io/65.182.162.217
+		
+2> arping  :  To sends an ARP request to resolve its own IP address
+              ARP resolves "IP address to MAC address",on router ARP cache is having higher Timeout.
+			  request the MAC address for its own IP which will cause routers and other hardware update ARP cache
+			  this is called 'unsolicited ARP' or 'gratuitous ARP'.
+			  Scene : u were having a server,whose H/W (MAC) got changed,but IP remains same.
+			          but all neighbours point to old MAC
+			          
+			  * arping -U -I {Interface-Name} {IP-Address}
+
+http://dougvitale.wordpress.com/2011/12/21/deprecated-linux-networking-commands-and-their-replacements/
+
+2> ifconfig  // configures the network interfaces.
+
+          * ifconfig -a  // shows all interface even someone is down
+          * ifconfig {eth0} up  // up the interface.
+		  * ifconfig {eth0} down // down the interface
+		  * ifconfig eth0 172.16.25.125 netmask 255.255.255.224 broadcast 172.16.25.63 mtu 1000
+		  * ifconfig eth0 promisc/-promisc  // here we change default behaviour is to listen only packet destined to interface.now it will listen all packets.(- to disable it).
+		  * ifconfig eth0:0 172.16.25.127  // aliasing the eth0
+		  * ifconfig eth0:0 down // remove the alias.
+		  * To change the MAC address temporarily.
+		   # ifconfig eth0 down   
+           # ifconfig eth0 hw ether 01:02:03:04:05:06
+		  
+eth0      Link encap:Ethernet  HWaddr 08:00:27:F1:99:91   // MAC address 
+          inet addr:10.0.2.15  Bcast:10.0.2.255  Mask:255.255.255.0
+          inet6 addr: fe80::a00:27ff:fef1:9991/64 Scope:Link  // MAC in ipv6 
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:23 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:40 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000 
+          RX bytes:10429 (10.1 KiB)  TX bytes:5537 (5.4 KiB)
+
+		  * Assigning Permanent IP :
+		  # vi /etc/sysconfig/network-scripts/ifcfg-eth0
+DEVICE="eth0"
+BOOTPROTO=static
+ONBOOT=yes
+TYPE="Ethernet"
+IPADDR=192.168.50.2
+NAME="System eth0"
+HWADDR=00:0C:29:28:FD:4C
+GATEWAY=192.168.50.1
+		  
+		
+		   
+	      
+			 
+
+3> ip addr show eth0   // shows the MAC address.
+4> ss  :  stands for socket statistics.
+          * ss -a  // show all sockets.
+		  * ss -l  // show listening sockets
+		  * ss -p  // shows the pid.
+		  * ss -t  // show only tcp
+		  * ss -u  // only udp 
+		  * ss -n  // donnot resolve the hostname
+		  * ss -o  // time information of each connection would be displayed. 
+
+4> netstat   :: display N/W stats
+               * netstat -a   // list all ports listening and non-listening.
+			   * -t|-u        // list tcp|udp ports
+			   * -l           // list only listening ports
+			   * -x           // display unix ports only
+			   * netstat -s   // display all protocol STATS ,icmp,ip,tcp,udp,
+			   * netstat -p   // displays the PID/Program with the output.
+			   * netstat -n   // don't resolve the host name ,port,username,speeds output as ignores the lookup.
+			   * netstat -c 5 // displays output in 5 sec
+			   * netstat -r   // display kernel routing table
+		FLAGS    DESTINATON : address of the resolved host
+		                      default : default route for the kernel.
+				 GATEWAY    : data is routed through this gateway.
+				 
+		         U : this entry is up
+		         G : the destination is not on the same network.
+				 P : P2P connection at this interface.
+				 R : interface is running.
+				 netstat -rC  // shows the kernel routing cache table
+			   * netstat -i   // display network interfaces.
+		FLAGS    RX-OK : Correct packets received on this interface.
+		         RX-ERR : Incorrect packets received on this interface.
+				 RX-DRP : Packets that were dropped at this interface.
+				 RX-OVR : Packets that this interface was unable to receive
+			   * netstat -e   // shows the user and inode info
+			   * netstat -g   // display multicasr group info
+			   * netstat -o   // include info regarding networking timers.
+			   keepalive (42.91/0/0) 
+			   42 seconds are more to expire.
+			   0  current retry count.
+			   
+/etc/services describes all the protocols and ports
+1> Send-Q     kernel is waiting for 192 bytes to get ACK from remote host.
+2> Recv-Q     bytes not copied by the user program,connected to this socket.
+3> Local Address:port    or  hostname:service
+4> Foreign Address:port  or  hostname:service
+      
+
+Due to the way TCP/IP works, connections can not be closed immediately,Packets may arrive out of order or be retransmitted after the connection has been closed.
+
+Possible Session States
+LISTEN	      accepting connections
+ESTABLISHED	  connection up and passing data
+SYN_SENT	  TCP; session has been requested by us; waiting for reply from remote endpoint
+SYN_RECV	  TCP; session has been requested by a remote endpoint for a socket on which we were listening
+LAST_ACK	  TCP; our socket is closed; remote endpoint has also shut down; we are waiting for a final ACK
+CLOSE_WAIT	  TCP; remote endpoint has shut down; the kernel is waiting for the application to close the socket
+TIME_WAIT	  TCP; The socket is waiting after close,to handle packets still in the network.
+              state is what a socket goes into when it closes,to prevent messages from arriving for the wrong applications like they might if the socket were reused too quickly.
+              /proc/sys/net/ipv4/tcp_fin_timeout  ,default 60
+              the time that must elapse before TCP/IP can release a closed connection and reuse it. 			  
+CLOSED	      socket is not being used 
+CLOSING	      TCP; our socket is shut down; remote endpoint is shut down; but we still dont have all our data sent
+FIN_WAIT1	  TCP; our socket has closed; we are in the process of tearing down the connection
+FIN_WAIT2	  TCP; the connection has been closed; our socket is waiting for the remote endpoint to shut down.
+UNKNOWN        The state of the socket is unknown.
+
+Observation: A high number of TIME_WAIT connections is a symptom of getting lots of short lived connections
+
+Some Miscellaneous Examples For Daily Need
+
+a. Number of Connections per connection states
+netstat -nat |grep 202.54.1.10 | awk ‘{print $6}’ | sort | uniq -c | sort -n 
+
+b. get list of IP address
+netstat -nat | awk ‘{ print $5}’ | cut -d: -f1 | sed -e ‘/^$/d’ | uniq 
+
+c. to check DDoS Attack or not.
+netstat -atun | awk ‘{print $5}’ | cut -d: -f1 | sed -e ‘/^$/d’ |sort | uniq -c | sort -n 
+
+d. entry in firewall
+iptables -A INPUT 1 -s $IPADRESS -j DROP/REJECT
+
+11> nslookup : queries the DNS server.
+               * nslookup  redhat.com     // prints the DNS server IP and answers A record.
+			   * nslookup -query=mx redhat.com    // MX
+			   * nslookup -type=ns redhat.com     // NS
+			   * nslookup -type=soa redhat.com    // SOA.start of authority,provides the authorative answers
+			   * nslookup -type=any google.com    // all records
+			   * nslookup 209.132.183.181         // Reverse Lookup
+			   * nslookup redhat.com ns1.redhat.com  // using a dns server to query
+			   * nslookup -debug redhat.com         // debug mode
+			   
+SOME IMPORTANT MESSAGES GOT DURING NETWORK CONNECTIVITY CHECK
+a) Timed Out : server didn't reply the request after a certain amount of time.
+b) No response from server : Application is not running on that port.
+c) Connection Refused  :  that the remote machine is up and running, but nothing is listening on the target socket.
+d) Network is Unreachable
+e) Refused : the Application refused to give answer back.
+
+
+
+12>  ping  : test the network connectivity between two network connections.it sends packet with an interval of 1 sec
+             it sends Internet Control Message Protocol (ICMP) echo request packets 
+               *  ping -c 5 google.com  
+			   *  ping -c 5 -q 127.0.0.1   // only stats
+			   *  ping -s 100 localhost    // change packet size from default 56.
+			   Ping Bytes Sent = Ping Packet Size + Ping Header Packet Size (28 bytes).
+			   *  ping hop1 hop2 hop3 .. hopN destination  // specifying the path
+			   *  ping -n  google.com      // shows IP address of host.
+			   
+			   Reply from 72.3.133.152: bytes=32 time=69ms TTL=47
+			   
+			   RTT : 69ms is the RTT. it depends on how close you are to the remote server, how many routers and other networking equipment are in between you and that server.
+			   TTL : no of hops/routers between source and destination.
+			         it prevents an IP packet from looping inside a network.
+					 
+					 
+Response time and the packet loss : a) THE NETWORK PIPES ,fiber vs copper.
+                                    b) THE NETWORK DEVICES ,router is overloaded.
+									c)  PHYSICAL REMOTENESS
+									d) SOURCE AND DESTINATION DEVICES ,card is malfunctioning or overloaded.
+									
+12> route :   * Route command is used to show/manipulate the IP routing table,maintained by routed daemon.
+              * IP datagrams are sent via router or direct to host if directly connected.
+              * Router vs Host  :  Router forwards the packet from one interface to another.
+			  * IP layer maintains a Routing Table,which decides what to do with the Datagrams received.
+			  * Routing Table 
+	  Destination   || IP address of next router  || FLAGS ||  Network interface specs
+	 host IP address                                a host       adding some info while passing it 
+	Network - 0.0.0.0                               a N/W
+	
+	          *  Any undeliverable datagram would produce an "ICMP host unreachable or ICMP network unreachable" error and this error is returned to the application that generated this datagram.
+			  *  
+			  *  route  -n  // on host with 
+Kernel IP routing table  ip address  192.168.12.157
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+N/W or host     * if not set    netmask
+                            for host :255.255.255.255
+					   default route :0.0.0.0 
+192.168.12.0    0.0.0.0         255.255.255.0   U     0      0        0 eth0  //destination is Network
+192.168.101.0   192.168.101.1   255.255.255.0   UG    0      0        0 eth1  
+169.254.0.0     0.0.0.0         255.255.0.0     U     0      0        0 eth0
+0.0.0.0         192.168.12.2    0.0.0.0         UG    0      0        0 eth0
+"0.0.0.0 means ANY ADDRESS" : if on destination ,for the address which doesn't match on above addresses.
+                            : if on Gateway ,Each network host has a default route for each network card. This will create a 0.0.0.0 route for such card
+this means a packet whose ip address range "192.168.12.0 - 192.168.12.255" then the gateway is *, which is 0.0.0.0.
+When packets are sent within this IP range, then the MAC address of the destination is found through ARP Protocol and the packet will be sent to the MAC address.
+The default gateway is configured as 192.168.12.2,
+The traffic to network 192.168.101.0/24 is configured to use 192.168.101.1 as gateway.
+All other traffic will be routed to the default gateway 192.168.12.2.
+         FLAGS ::  U : route is up.
+		           H : destinatiopn is host.
+                   G : use gateway
+                   R : reinstate route for dynamic routing 
+				   D : dynamically installed by daemon or redirect
+                   M : modified from routing daemon or redirect
+                   A : installed by addrconf
+                   C : cache entry
+                   ! : reject route
+                   				   
+
+
+              * route add default gw 192.168.1.10 dev eth0 //Adding a default gateway	
+    ADD       route add -host 213.153.99.238 gw 10.220.5.1 dev eth1	  // route for host
+              route add -net 192.168.1.0 netmask 255.255.255.0 gw 192.168.1.1 dev eth1	 // route for N/W
+              The route command finds automatically the value of netmask 
+			  Add the above commands in rc.local for boot persistent
+              or 213.153.99.128/25 dev eth1 in /etc/sysconfig/network-scripts/route-eth1	
+             10.0.0.0/8 via 10.10.29.65  dev eth0  //static routing for network 10.0.0.0/8 via 10.9.38.65 router.	in file 	/etc/sysconfig/network-scripts/route-eth0	  
+			  * route -Cn   // list the "kernel Cache".
+			  * route add -host 192.168.1.51 reject  // rejects the packet to host/Network.
+			  * route add -net 192.168.1.0 netmask 255.255.255.0 reject // rejects entire network.
+	DELETE    * route del -net 10.21.35.0 netmask 255.255.255.0 gw 192.168.1.2 dev eth0 
+	
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+10.0.31.18      0.0.0.0         255.255.255.255 UH    0      0        0 ppp0  // for host,checked via Genmask
+38.96.196.94    192.168.1.2     255.255.255.255 UGH   0      0        0 wlan0 // and flag
+192.168.84.0    0.0.0.0         255.255.255.0   U     0      0        0 vmnet8  // it is for N/W
+192.168.1.0     0.0.0.0         255.255.255.0   U     2      0        0 wlan0
+192.168.110.0   0.0.0.0         255.255.255.0   U     0      0        0 vmnet1
+192.168.122.0   0.0.0.0         255.255.255.0   U     0      0        0 virbr0
+169.254.0.0     0.0.0.0         255.255.0.0     U     1000   0        0 wlan0
+10.0.0.0        0.0.0.0         255.0.0.0       U     0      0        0 ppp0
+0.0.0.0         192.168.1.2     0.0.0.0         UG    0      0        0 wlan0
+	          	  
+-----------------------------------------------------------------------------------------------
+ping google.com    // how routing works
+
+1> First it will query the DNS server to obtain the ip-address of google.com ( for example: 74.125.236.34 )
+2> The destination address ( 74.125.236.34 ) is not within the network range.
+3> in Layer-3 (IP header) the DESTINATION IP will be set as “74.125.236.34″.
+   In Layer-2, the DESTINATION MAC address will be the filled in as the MAC address of the default gateway ( 192.168.1.10′s MAC ). The MAC will be found by using ARP .
+4> When the packet is sent out, the network switch ( which works on Layer-2 ), send the packet to the default gateway since the destination MAC is that of the gateway.
+5> Once the gateway receives the packet, based on its routing table, it will forward the packets further.
+
+12> traceroute  : * traces the path from source to destination.
+                  * print names of routers
+				  * network latency to send/receive at each device on path
+				  TTL : max hops,when reaches to 0,informed by the NODE to Source
+				 * traceroute -n 8.8.8.8   // disables mapping 
+				 source creates an UDP packet 
+				 a) source address
+				 b) destination address
+				 c) "UDP port in the range of 33434 to 33534"
+				 
+				 it starts from TTL=1 to TTL it reaches the destination or 30,thereby it came to know the Name of HOP/Router in between "TTL Time exceeded message".
+				 on destination it receives "ICMP Destination/PORT Unreachable" message,as the port.
+				 it sends 3 UDP messages to each HOP,with same TTL to calculate the "Round Trip Time."
+				 
+root@workstation:~# traceroute -n 8.8.8.8
+traceroute to 8.8.8.8 (8.8.8.8), 30 hops max, 60 byte packets
+ 1  192.168.0.1  6.768 ms  6.462 ms  6.223 ms    // 1 st hop,with three udp sent same TTL
+ 2  183.83.192.1  5.842 ms  5.543 ms  5.288 ms
+ 3  183.82.14.5  5.078 ms  6.755 ms  6.468 ms
+ 4  183.82.14.57  20.789 ms  27.609 ms  27.931 ms
+ 5  72.14.194.18  17.821 ms  17.652 ms  17.465 ms
+ 6  66.249.94.170  19.378 ms  15.975 ms  23.017 ms
+ 7  209.85.241.21  16.633 ms  16.607 ms  17.428 ms
+ 8  8.8.8.8  17.144 ms  17.662 ms  17.228 ms
+ 
+                   * traceroute program can be used with TCP/ICMP/UDP ,UDP being default.
+				   * traceroute -I -n 8.8.8.8  // ICMP protocol
+				   * traceroute -T -n 8.8.8.8  // TCP protocol,Its used because almost all firewall and routers in between allows you to send TCP traffic. And if the packet is toward port 80, which is the web traffic then most of the routers allow that packet.
+				   *  '*'  in output means "field  could not be fetched" (reverse DNS lookup failure or packets not reaching the destination router or may be loss of packets)
+			       * traceroute google.com -f 8  // starts hop count with 8
+				   * traceroute google.com -q 5  //  no of RTT will be 5
+				   
+				   ALL * * *,that means that the connection was not able to be completed
+				   A network outage,High amounts of traffic causing network congestion
+                   A firewall dropping traffic from your IP
+
+13> netcat  :  A networking tool to monitor,READ/WRITE data across Network using TCP/UDP ports.
+               it creates sockets : Server socket for listening at Remote End.
+			                        Client Socket for Sending   at Client Machine.
+              * nc [options] host port  //just like telnet,plain text.
+			  * nc -v -n 65.182.162.213  22   
+			  * nc -u host port  // UDP Connection,Default is TCP.
+			  * nc -z -v host  port-range  // scans all ports in verbose mode,z the connection is closed as soon as it opens and no actual data exchange take place.zero I/O.
+			  * nc -z -n -v 111.111.111.111 1-1000   // do not resolve the DNS
+			  * nc -z -n -v 111.111.111.111 1-1000 2>&1  // result is sent to standard error ,moving to std. output
+			  * nc -l 4444    // listens a port
+			  * echo -n "foo" | nc -u -w1 192.168.1.8 5000   // sending UDP message,with 1 sec timeout.
+			  * Copy a file from HOSTA to HOSTB
+			  nc hostB.com 5000 < my.jpg   // SENDER
+			or,cat my.jpg|nc hostB.com 5000
+			  nc -l 5000 > out.jpg         // Receiver
+			  * Transfer the whole directory.
+			  tar cvf - /path/to/dir | nc hostB.com 5000  // SENDER
+			  nc -l 5000 | tar xvf -    // Receiver
+			  * Chatting 
+			  nc -u -n 192.168.233.203 5000  // sends the packet to 192.168.233.203
+			  nc -l 5000   // Receiver
+			  * Launch a "remote shell" which allows you run from local host any commands to be executed on a remote host,and output on localhost.not supported in centos/redhat
+			  nc -l 5000 -e /bin/bash  // Remote host,192.168.233.208,passes all command to bash,and result back
+			  nc 192.168.233.208 5000   // local machine
+			  * nc -6 -l 5000   // listening IPv6 Address.
+			  * Communication via different port,useful if local machine is under firewall port 25,and all other ports are blocked,so to communicate remote host on Random port,local machine will read on 25 ::
+			  nc -l 1567   // Remote Host,172.31.100.7
+			  nc 172.31.100.7 1567 -p 25  // local machine,TCP connection with port 25
+			                                               Source Port 1567
+			  * Specifying the IP through which you need to communicate on machine :
+			  nc -u 172.31.100.7 1567 -s 172.31.100.5 > file.txt
+			         Remote host           Local IP
+			  * To get continuously listening at the server end :
+			  nc -k -l 2389   // use -k ,used with -l only
+              * 			  
+			 
+-----------------------------------------------------------------------------------------------
+13> nice   : a value given to process,which decides its priority results in more cpu allocation.
+             by default launched program get the Nice value of "0".
+			 value given to a process is in range of  -20 to 19
+			 -20 is the most priority task
+			 nice can change the priority of a launching job,not of the running one.
+			 
+			 nice -n 10 <command name>  
+			 
+			 Renice can change the priority of running command.
+			 renice -4 -p 3456    // changes the running process priority.
+			 renice 13 -p 3564 -u sarath // changes to 13 of pid 3564 and all the process owned by sarath.
+			 renice -n 5 -g geekstuff    // all process whose group is geekstuff
+			 
+									
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                                  HDD Commands
+	http://linoxide.com/linux-how-to/how-to-fix-repair-bad-blocks-in-linux/	
+
+a)	When the kernel interacts with a journalling filesystem, writes to disk are first written to a log or journal before they are written to disk,this slows down the writes to filesystem,but it reduces data corruption and faster
+reboots after a power outage.
+b) Linux operating system, breaks the I/O into PAGES and the default on many distribution is 4096 bytes. Which means it reads the writes blocks into and out of memory(RAM) with 4096 bytes page size.	
+
+1> badblocks : to check any badblock on disk/partition.
+            * badblocks -v /dev/sda2
+			* badblocks -v -b 2048 /dev/sdb3  // specifies the block size(tune2fs),default is 1024 bytes.
+			* badblocks -v -o badblocks.log /dev/sdb3  // badblocks in an output file
+			
+			used with mkfs to segregate the bad blocks ,so that they will not be used in future.
+			* badblocks -v /dev/hda1 > bad-blocks
+			* fsck -t ext3 -l bad-blocks /dev/hda1  // by this way bad blocks get recorded.
+			
+2> tune2fs  : change/modify tunable parameters on ext2, ext3 and ext4 type filesystems. 
+           Note : To adjust the maximum mount count, the filesystem should be UNMOUNTED before using tune2fs .
+            * tune2fs -l /dev/sdb3   // describes complete features of a partition.,list the block size.
+			                         // Block count ,Block size ,Blocks per group etc
+            * tune2fs -L Disk_One /dev/sda1  // Change Filesystem Volume Label Name,max 16 characters.
+			* tune2fs -c max-mount-counts //number  of mounts after which the filesystem will be checked by e2fsck
+			*                            // 0 or -1 ,it wont be checked.
+			* tune2fs -C mount-count  // sets the count ,the time filesystem has been mounted.if it is greater than
+			                           max-mount-counts,then it will be checked by e2fsck on next reboot.
+            * tune2fs -i  interval-between-checks[d|m|w][day|month|week]									   
+			  tune2fs -i 10d /dev/sda1
+			* tune2fs -U UUID  /dev/hda1 //Set the universally unique identifier
+			block special device name like /dev/hda1.
+			
+			UUID  An Intro :
+			* 32 hexadecimal digits ,identifier for block devices.The intent of UUIDs is to enable distributed systems to uniquely identify information without significant central coordination.
+			* situation where couple of HDD are attached via USB,then there is no persistent and reliable naming of
+			  the devices.somtimes it will get named "sda" sometimes "sdb".
+			* this requires to have unique entry in "FSTAB" file.
+			* also for block device (HDD) it is stored in superblock.
+			* we can also generate the UUID .
+			cat /proc/sys/kernel/random/uuid   //each time gives unique UUID.
+			uuidgen                            //each time produces new and unique.
+			* how to get the UUID of a device,so it can be safely entered into fstab.
+			ls -l /dev/disk/by-uuid
+			blkid
+			udevadm info -q all -n /dev/sda1|grep uuid   //udev tool queries from its DB.
+
+			
+3> 	debugfs
+
+4> dmesg : kernel loads the OS into memory,during boot time
+           kernel prints these message on screen of H/W it encounters.
+		   these messages are stored in Kernel Ring Buffer,which get overwrite after next restart.
+		   * On third line u will get date on which server was installed.
+
+5> dumpe2fs : Displaying superblock and group block filesystem information
+             * dumpe2fs -b /dev/sda1   // prints the bad blocks.
+			 * dumpe2fs -h /dev/sda1  // display superblock information only.
+			 * 
+			 
+6>  e2fsck/fsck  : run file system 2/3 check,[but it should be unmounted,before running] for bad sectors andI/O errors related to HDD.it can check and repair the filesystem.it reads the journal block if clean then exit else check.
+        a)  umount /dev/sda1
+		    umount -l /dev/sda1 // lazy unmount.if not done from above.
+		b)  e2fsck -p /dev/sda1  // Automatic repair (no questions)
+        c) 	e2fsck -b 8193 	/dev/sda1  // alternative superblock if primary get corrupted.once done it updates the primary superblock
+		d)  e2fsck -c /dev/sda1  // run the badblocks program,read only scan to find any bad block.
+		e)  e2fsck -f /dev/sda1  // force check even journal block is clean
+		f)  e2fsck -c /dev/sda1   // check for badblocks and add them into badblock list.
+		g)  e2fsck -y -v -f /dev/sda2  // verbose mode, yes for all.
+		  Exit Code::
+		    0    - No errors
+            1    - File system errors corrected
+            2    - File system errors corrected, system should
+                   be rebooted
+            4    - File system errors left uncorrected
+            8    - Operational error
+            16   - Usage or syntax error
+            32   - E2fsck cancelled by user request
+            128  - Shared library error
+
+7> fdisk : tool to manage disk partition.only 4 primary partitions are allowed if you need more then you can 
+           create logical partitions.
+		   It is possible to have 4 different OS at a time,but only One partition will be active
+		   a disk's sector 0 : contains the partition table info.
+		   * as we know everything is file in linux,so the hdd also.
+		   DEVICE NAME : sda ,device file /dev/sda
+		   IDE : /dev/hda|b|c 
+		   SCSI/SATA: /dev/sda|b|c  "this is called device files which represent a HARD DISK".
+		   
+		   
+		   * fdisk -l : list all available partitions from all disks
+		   * fdisk -l /dev/sda  :  list all partitions from disk sda
+		   * fdisk -s /dev/sda   : size in blocks
+		   * under fdisk 
+		          -m  : list help
+				  -d  : delete partition
+				  -n  : new partition.
+				  mkfs.ext4 /dev/sda5   // creates a file system on it,us
+				  
+				  
+8>  lsblk  : list all block devices or say partition [block == partition ]
+	NAME   MAJ:MIN    RM(1 removable)   SIZE RO TYPE MOUNTPOINT
+
+MAJOR DEVICE NO : kernel looks into "block or character driver table" for device driver.
+MINOR DEVICE NO : device driver enumerates the multiple instances of the same device.
+
+brw-rw----. 1 root    disk      1,  11 Aug 14 23:31 ram11
+brw-rw----. 1 root    disk      1,  12 Aug 14 23:31 ram12		
+
+		                              
+9>	blkid  : display information about available block devices
+	Device-file LABEL  UUID(Universal unique identifier)  TYPE (partition type)
+		
+10> /etc/fstab : 
+	DEVICE/partition/block   MOUNT-POINT  TYPE   defaults       BACKUP          FSCK_ORDER
+		device file/UUID                      Mount options     0: no dump      0 or no value : dont check
+		                                                           required     1 : high priority,given to root FS
+																	            2 or higher : for other
+		
+		we have some pseudo file system that do not have "real device name."
+		tmpfs,sysfs,devpts,proc,none
+
+		
+8> MAKEDEV : create the device files in /dev to interface with drivers in kernel.
+            * programs giving the error "ENOENT: No such file or directory',means device file is missing.
+			* programs giving the error "ENODEV: No such device" ,means  kernel does not have the driver configured or loaded.
+		
+9> mknod : it creates device files/special files which are not present and is not generated by MAKEDEV.
+           mknod /dev/ttyS0 c 4 64         // c --> character ,with 4 major and 64 minor device no.
+		   
+10> mke2fs/   :   used to create the filesystem.all filesystem operation must be done on unmounted partition/disk
+    mkfs.ext2|3|4       
+               *  mke2fs /dev/sda6  // ext2 filesystem on this partition.
+			   *  mkfs -t ext4 /dev/sda6 // this invokes the mkfs.ext4
+			   *  mke2fs -c /dev/sda6  // checks for bad block
+			   *  mkfs -t ext3 -l bad_block_file /dev/sda6  // reads the file created above
+			   *  mkfs -t ext3 -n /dev/sda6  // Simulate the file system creation.
+               *  mke2fs -L DATA /dev/sda6  // creates the label name.
+			   *  e2label /dev/sda6  // to check the label name.
+			   *  e2label /dev/sda usbstroage // assigns the label name
+			       
+// since 2003 kernel 2.6 is floating with linux ,which uses udev as DEVICE MANAGER.which assigns 
+    LABELS and UUID(default) for device files.
+	
+11> mkswap :: mkswap /device/file
+
+12> mount  :: filesystem is a way to organize files on a HDD.
+              Filesystem types comes in variety of flavours,to access the filesystem,we need to first mount it. 
+              mounting is attaching a new filesystem to root filesystem.
+           
+		      * mount  // list all the "mounted devices,mount point,filesystem type,
+			  * one should know the "device file" of "New partition/disk/device/filesystem"  
+			  * mount -t <format type> -o ro <device file>  /mount/point // mount point must be empty
+			  Format type : adfs, affs, autofs, coda, cramfs, devpts, efs, ext2, ext3, hfs, hpfs, iso9660, jfs, minix, msdos, ncpfs, nfs, nfs4, ntfs, proc, qnx4,reiserfs, romfs, smbfs, sysv, tmpfs, udf, ufs, umsdos, vfat,xfs, and xiafs.
+			  -t auto : used to detect automatically the filesystem of device.
+			  iso9660 : is the default type.
+			  * mount -a   // mounts all the devices mentioned in /etc/fstab
+			 
+			  fstab : a listing of all devices and mount point ,read at boot time.
+			  mtab  : a file that contains the actual mounted devices,run time values
+			  * /proc/mounts  //describe the correct status 
+			  * mount -B /mydata /mnt   // binding a mount point to new mount point
+			                            // access to old will continue.
+			  * mount -M /mydata /mnt/   // moving the mount point to new one,old is not accessible.
+			  * mount -n /dev/sda6 /mydata  // mount without writing into /etc/mtab
+			                                  helpful if /etc gone readonly.
+			  * mount <device|mount_point>  // already known ones.
+			  * mount -o remount,rw /mydata   // remounting the device
+			  
+			  umount announces to the system that the removable File structure mounted on specified directory
+			  is to be removed.any pending I/O is completed ,and the file structure is flagged as clean.
+			  
+			  * umount -a  // umounts all the devices mentioned in /etc/mtab
+			  * umount -f /mnt  // forcefully umount the partition
+			  * umount -l /mnt  // lazy umount,umount will be done when a task writes data on device.
+			  * umount -n /mnt  // dont made changes in mtab.
+			  * umount -v /mnt  // verbose mode.
+			  
+8> swapon / swapoff : *  swapon -s //lists the swap space used by the system.
+                      *  swapon -a //mounts all swap spaces listed in /etc/fstab.
+					  *  swapon -v -f /path/where/file/is   //enables the swap of that file.
+					  *  swapoff -v /path/where/file/is
+                     					  
+ 		  
+			   
+		
+		
+		
+		
+		
+		
+		
+		
+	
+		 
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                             Understanding Linux Boot Process 
+							 
+* power on , BIOS get executed.
+* it test the H/W using POST [Power On self Test ].
+* it then reads the 1st sector of Hard disk.
+* this contain the MBR ( Master Boot Record) 512 bytes ,which contains the info of address of BOOT LOADER.
+* we can have more than 1 boot loader in MBR.GRUB have the capacity to boot other OS which are conform to the Multiboot Specification,wherein we have chainloader which loads an intermediate file which loads the other OS. 
+* GRUB was "written by Erich Boleyn".
+* GRUB uses it's own naming convention,it assigns hd0 to the the first partition and so on.
+   first partition of first drive,  /dev/hda1, is known as (hd0,0) to GRUB ,whether it is IDE,SATA or SCSI.
+   third partition of second drive, /dev/hdb3              (hd1,2)
+   
+   
+a) primary boot loader info.
+b) partition table info.
+c) mbr validation check.
+* then grub boot the kernel which is marked as "Default".
+* then kernel calls the system drivers and then init program "which loads the ROOT FILESYSTEM /" and services.
+* init calls the /etc/rc.d/rc.sysinit,sets the hostname,mounts the filesystem,set networking it calls then /etc/inittab (which service needs to up as per the run level).
+0 - Halt
+1 - Singe-user mode
+2 - Multi-user with partial services
+3 - Full multi-user with networking (text mode)
+4 - Not used
+5 - Full multi-user graphical mode (provides a GUI desktop login)
+6 - Reboot
+
+as per runlevel services are defined in /etc/rcN.d/ ,containing soft links to programs /etc/rc.d/init.d/
+/etc/rc.d/init.d contains all the programs/daemons.
+
+chkconfig --list               //list all the services.
+chkconfig --level 35 <service_name> off|on
+chkconfig <service> off  // disables it on all runlevels
+chkconfig --add iptables
+files in /etc/rc.d/{runlevel} : K kill
+                                S Start
+                                n Sequence when it will be started/stopped.
+
+* It was all under SysVinit ,managing 5 run levels (6 for reboot).
+* Upstart had replaced the SysVinit,which is backward compatible.
+* Upstart directory  :  /etc/event.d  (as /etc/inittab).
+                        /etc/event.d/rcN  : configures the runlevel.
+						/etc/event.d/ttyN : configures the TTY.
+						
+* runlevel  // prints the current runlevel
+* telinit  3  // changes the runlevel
+
+/////////////////////////////GRUB.conf//////////////////////////////////
+//DEFAULT SECTION
+default=0                # default to the first entry
+timeout=20               # set the timeout to 20 seconds
+splashimage=(hd0,0)/grub/splash.xpm.gz # the splash image displayed
+
+//ENTRY OF EVERY BOOOT SECTION,MENU DISPLAYED
+
+title Linux 2.6.28       #  title name
+root (hd0,1)             #  set the ROOT device and attempts to mount it.first HDD ,second partition
+kernel /vmlinuz-2.6.28 ro root=LABEL=/     # kernel image with version,and passes some parameters to kernel
+initrd /initrd-2.6.28          # sets up the RAM Disk.
+
+* e  : to edit the command line for entry , s S 1
+* a  : to modify the kernel argument.
+* c  : goto command line interface,to issue commands manually
+ESC  : from cmd line back to menu list.
+
+GRUB shell can be obtained using : grub command
+
+                                UNDERSTANDING HARD DISK PARTITIONS
+* a disk is partitioned ,formatted to get in use.
+* In IBM PC architecture , first sector of every hard disk is known as the boot sector.
+* this sector contains "PARTITION TABLE + BOOT LOADER PROGRAM" .
+* this table contains 4 partition table entries,known as PRIMARY PARTITION.
+* to overcome this one of 4 partition is made as extended partition which allows logical partitions,upto 24.
+* to overcome this one of 4 partition is made as extended partition which allows logical partitions,upto 24.
+                                     Partition Table
+                                   Primary Partition #1 (Active Partition,contains the MBR+ BOOT LOADER//presents options which OS needs to load)
+                                   Primary Partition #2
+                                   Primary Partition #3
+                                   Primary Partition #4 (Extended Partition)
+ 	                               Logical Partition #1
+ 	                               Logical Partition #1
+								   
+	
+            
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Pending 
+X11
+multipathing : http://linuxtroops.blogspot.in/2012/12/red-hat-multipathing.html
+chmod   from notes
+setuid/gid sticky bit
+domainname : NFS/NIS // set/display the current NIS domain name.
+iptables
+logrotate  253
+
+NFS  : 308 nfsd,309 nfsstat,portmap 329,
+DNS : nsupdate 311,
+quota : 344,quotacheck,quotaon,quotaoff,quotastats
+sendmail : 386
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+                                SERVER EXPLAINED 
+								
+1> SSH SERVER : 
+
+/etc/ssh/sshd_config : OpenSSH server configuration file.
+/etc/ssh/ssh_config  : OpenSSH client configuration file.
+
+a)  /etc/nologin     : if this file exist,all users will be denied access except root.
+b) SSH port          : TCP 22
+
+Port 300                        // for these two interfaces it will listen on 300 port.
+ListenAddress 192.168.1.5     // By default SSH listen to all available interfaces and IP address on the system
+ListenAddress 202.54.1.5
+
+c) Protocol 2  : using ssh2 protocol only.
+d) Limit Users' SSH Access : AllowUsers root vivek jerry
+e) Limit Group' SSH Access : AllowGroups root vivek jerry
+
+f) DenyUsers saroj anjali foo      // rest all allowed.
+g) DenyGroups group1 group2
+
+* Also accept pattern user@host  like :  joe@10.0.5.1 ,  joe@10.0.*
+*note : you have to also set root,even with case of without-password
+h) timeout interval :   ClientAliveInterval 300   // after 5 minutes of inactivity user will be logged out.
+                        ClientAliveCountMax 0     // Sets the number of client alive messages
+						
+i) Host based Authentication : 
+j) Disable root Login via SSH : PermitRootLogin no   // this completely disables the root login
+                                                without-password  // allow root logins, but only with an appropriate ssh key
+												
+k) Enable a Warning Banner : Banner /etc/issue
+
+l) TCP Wrapper is a host-based Networking ACL system, used to filter network access to Internet. 
+/etc/hosts.allow : 
+sshd : 192.168.1.2 172.16.23.12   // ssh only from 2 hosts
+
+Disadvantages :
+1> All UNIX apps must be compiled with the libwrap library.
+2> The wrappers do not work with RPC services over TCP.
+3> The user name lookup feature of TCP Wrappers uses identd to identify the username of the remote host. By default, this feature is disabled, as identd may appear hung when there are a large number of TCP connections
+
+Slow ssh logins  : put UseDns to no,for non-looking up the DNS
+           PAM : Pluggable Authentication Module.
+		         used for password authentication,authorization,accounting .
+		         Existing services can use new AAA methods, without change, simply by reconfiguring PAM or adding a new PAM module to the system.
+				 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+FTP Server :
+
+1> Having two ports 
+   21 : Control Port == exchange of commands and replies between client and server.
+   20 : Data Port == pure data transfer
+       
+2> FTP can act in two modes : Active and Passive mode.
+
+3> Active FTP :  
+* Follows Original specification of FTP.
+* in this client connects to ephemeral(for short duration) port,no. greater than 1024 to the server on port 21.
+* using the client's IP and ephemeral port (via PORT command it shares),Server makes connection with client to send data from port 20.
+* It may be disallowed at client side from FIREWALL ,as a connection is originating from privileged port to non privileged port.
+
+4> Passive FTP :
+* In this FTP client issues, the PASV command to initiate data transfer in passive mode.
+* and then Server Respond with ephemeral Port and IP to which client can connect.
+* here server listens the ephemeral port (data port) and to wait for connection.
+* here it is problematic with Firewall perspective at server end,as connections are requested on ephemeral ports from the internet. In this case client will be easily made connection but will unable to have data transfer.
+
+
+* /etc/vsftpd/vsftpd.conf : Main conf file.
+* /usr/sbin/vsftpd  : FTP Daemon
+* /etc/vsftpd/ftpusers : blacklist file,referenced by PAM.
+* /etc/vsftpd/user_list : list containing users which are denied or allowed.
+* /var/ftp  : FTP working directory.
+* /var/ftp/pub : directory where anonymous user can access files.
+* option=value    // there should be no space.
+
+listen=YES   // it says VSFTP will run in standalone mode,not under any super daemon xinit etc.
+listen_address=IP  // listens the IP for connections.
+anon_max_rate=some_no  // max data transfer rate in bytes/sec
+             =0      // unlimited.
+			 
+listen_port=21   // the port on which it listens.
+pasv_enable=YES/NO  // mode in which data connection is enabled with client.
+                    // Default is yes.
+port_enable=YES/NO  // control the PORT method of obtaining a data connection.
+                    // Default is yes.
+
+anonymous_enable=YES/NO  // controls the anonymous login , permitted or not.
+                     // default user ; ftp and anonymous
+
+tcp_wrappers=YES/NO  // incoming connections will be fed through tcp_wrappers access control
+local_enable=YES/NO  // if enabled then the OS user listed in /etc/passwd can access the ftp.
+userlist_enable=YES/NO  // if enabled ,will load a list of username provided by the file: userlist_file.
+                            user mentioned in this file will be denied access.
+userlist_deny=YES/NO   // examined only if "userlist_enable" is active :
+                          When its value is set to NO, users will be denied login, unless they are explicitly
+listed in the file specified by userlist_file. When login is denied, the denial is issued before the user
+is asked for a password; this helps prevent users from sending clear text across the network. The default
+value is YES.
+
+userlist_file=file-path   // checked when userlist_enable is active.
+                          // default file is vsftpd.user_list
+
+download_enable=YES/NO   // if set to NO all download will be denied.
+write_enable=YES/NO   // this controls whether any FTP command is allowed to change the file system.
+                         STOR, DELE,RNFR, RNTO, MKD, RMD, APPE,and SITE.
+                      // default is no
+
+chown_username=      // specifies the username given ownership to files uploaded by anonymous user.
+chown_uploads=YES/NO  // controls the files ownership uploaded by anonymous user.
+
+use_localtime=YES/NO   // if enabled it displays local server time.
+                          default is showing time in GMT.
+hide_ids=YES/NO        // if enabled: all directory listing will show ftp as user and group
+                        // default is NO.
+dirlist_enable=YES/NO   // controls the directory listing behaviour.
+                            default is YES.
+
+vsftpd_log_file=vsftpd.log    // defines the logging file,in /var/log
+xferlog_enable=YES/NO        // keeps logging of files as ftp transfer occur , in /var/log/xferlog
+syslogd_enable=YES/NO   // controls the logging behaviour to move to system log .
+
++++++++++++++++++++++++++++++++++
+Setting Up an Anonymous-Only FTP Server ::
+* for a site having thousands of anonymous users.
+* set following options :
+local_enable=NO
+write_enable=NO
+
+Setting Up an FTP Server with Virtual Users (not OS users) ::
+* The use of virtual users will allow a site to serve content that should be accessible to untrusted users,again password moves in network as plain text.
+* vsftpd = FTP + SSL
+* creating two ftp users : "ftp-user1","ftp-user2".
+* 
+++++++++++++++++++++++++++++++++++++++++++
+Adding rules in iptables
+iptables -I INPUT -p tcp -m tcp --dport 80 -j ACCEPT
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++=
+http://wiki.greenstone.org/wiki/index.php/Useful_SVN_Commands
+SVN ::
+
+a) svn checkout|co  <URL>  <local-folder>|.   // it downloads the file to local machine from remote SVN
+b) svn update <filename1> <filename2>   // update local file with SVN.
+c) svn update   // update the complete directory
+d) svn info <file_name>  // to list the revision no of file.
+e) 
+
+
+
+
+
+
+
+
+12141 
+
+
+
+
+
+
+
+
+
+
+
+
+
+

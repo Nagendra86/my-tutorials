@@ -1,0 +1,134 @@
+dynatrace 
+
+1> Pure path 
+grey : auto sensor : slow things, 
+
+
+
+Advanced
+
+2> 
+
+With the use of Vagrant, the configuration of the development and the production environment can be mirrored as closely as possible. And errors like “works on my machine” can become a thing of the past.
+
+1> http://www.vagrantbox.es/
+2> https://vagrantcloud.com/
+
+
+vagrant -v   // to list the version 
+
+vagrant init precise32 http://files.vagrantup.com/precise32.box
+
+
+vagrant box add precise32 http://files.vagrantup.com/precise32.box --provider virtualbox
+[vagrant box add {title} {url}]
+vagrant box list // validates our installation and lists out installed box
+
+vagrant init precise32 // Initializing virtual machine here means vagrant will create new vagrant file in this folder called Vagrant
+
+vagrant up  
+
+vagrant halt
+
+vagrant destroy 
+
+//We can start vagrant without bring up the virtual box
+
+adding other box
+
+vagrant box add centos64 https://github.com/2creatives/vagrant-centos/releases/download/v6.4.2/centos64-x86_64-20140116.box --provider virtualbox
+vagrant box add centos64 https://atlas.hashicorp.com/nrel/boxes/CentOS-6.5-x86_64  --provider virtualbox
+vagrant init centos64
+
+vagrant up
+
+
+// Antoher machine 
+
+vagrant box add centos7   https://github.com/holms/vagrant-centos7-box/releases/download/7.1.1503.001/CentOS-7.1.1503-x86_64-netboot.box
+
+vagrant init centos7
+
+vagrant up
+
+
+
+ubuntu   Project 1 : 2222
+centos6  Project 2 : 2200
+centos 7 Project 3 : 2201
+
+// chdir to any of the project described above
+vagrant ssh-config  // displays SSH details of the machine u want to connect to
+vagrant status  // shows the status of that machine
+vagrant box list  // list out all boxes
+vagrant box remove precise64 virtualbox  // name and provider
+
+
+
+You can remove a box even if there are running Vagrant environments based on that box. The box is only used as an initial clone and is not needed after that. But note that if you destroy those running Vagrant environments, Vagrant will need the box again the next time you run vagrant up.you can do "vagrant box repackage" that will create the box image on your local directory.and it will be identical to the original box u earlier downloaded.
+
+// Steps to add box from already added and downloaded box
+vagrant package --base <name_of_machine_in_virtual_box>  // this will package the machine into package.box
+vagrant box add --name <name_of_new_box> package.box virtualbox
+vagrant init <name_of_box>
+vagrant up
+
+HostName 127.0.0.1
+User vagrant
+Port 2222
+IdentityFile /Users/lorinhochstein/dev/ansiblebook/ch01/playbooks/.vagrant/machines/default/virtualbox/private_key
+
+used to login like below from host :
+ssh vagrant@127.0.0.1 -p 2222 -i /Users/lorinhochstein/dev/ansiblebook/ch01/
+playbooks/.vagrant/machines/default/virtualbox/private_key
+
+
+D:\HashiCorp\Vagrant>vagrant global-status
+id       name    provider   state    directory
+-------------------------------------------------------------------------
+08f1a2f  default virtualbox poweroff D:/HashiCorp/Vagrant/Project1
+a5da605  default virtualbox running  D:/HashiCorp/Vagrant/Project2
+5d07374  default virtualbox running  D:/HashiCorp/Vagrant/Project3
+
+The above shows information about all known Vagrant environments
+on this machine. This data is cached and may not be completely
+up-to-date. To interact with any of the machines, you can go to
+that directory and run Vagrant, or you can use the ID directly
+with Vagrant commands from any directory. For example:
+"vagrant destroy 1a2b3c4d"
+
+
+d:\HashiCorp\Vagrant\Project3
+λ vagrant ssh
+Enter passphrase for key 'd:/HashiCorp/Vagrant/Project3/.vagrant/machines/default/virtualbox/private_key':
+vagrant@127.0.0.1's password:
+Last login: Sun May  1 05:45:48 2016 from 10.0.2.2
+Welcome to your Vagrant-built virtual machine.
+[vagrant@localhost ~]$
+[vagrant@localhost ~]$
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Environment setup
+1> make one folder
+2> cd to folder
+3> vagrant init   // this will create vagrant file,which keeps the env configuration like ip,hostname,image name
+4> edit the vagrant file , which was made above with the images and name u want
+
+ config.vm.define "web" do |web|
+    web.vm.box="centos6"
+    web.vm.hostname = "web"
+    web.vm.network "private_network", ip: "192.168.33.20"
+    web.vm.network "forwarded_port", guest: 80, host: 8080
+  end
+  
+5> vm box name can be found on vagrantcloud.com
+
+6> vagrant up  //this will download the images of respective boxes and make them up
+
+7> vagrant reload  // to take the changes in config at runtime
+
+
+C:\Users\nagendra.singh\.vagrant.d\boxes\centos6\0\virtualbox
+https://atlas.hashicorp.com/boxes/search?utf8=%E2%9C%93&sort=&provider=virtualbox&q=centos
